@@ -10,6 +10,7 @@ use App\Livewire\LivewireEvaluaciones;
 use App\Livewire\LivewireFeriados;
 use App\Livewire\LivewireAnticipos;
 use App\Livewire\LivewireConceptosPago;
+use App\Livewire\LivewireConfiguracion;
 use App\Livewire\LivewireGestiones;
 use App\Livewire\LivewireHome;
 use App\Livewire\LivewireHorasExtra;
@@ -77,6 +78,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/reglamentos', LivewireReglamentos::class)->middleware('can:Ver Reglamentos')->name('reglamentos');
     Route::get('/notificaciones', LivewireNotificaciones::class)->middleware('can:Ver Notificaciones')->name('notificaciones');
     Route::get('/reportes', LivewireReportes::class)->middleware('can:Ver Reportes')->name('reportes');
+    Route::get('/configuracion', LivewireConfiguracion::class)->middleware('can:Ver Configuracion')->name('configuracion');
 
     Route::get('settings/profile', Profile::class)->name('settings.profile');
     Route::get('settings/password', Password::class)->name('settings.password');

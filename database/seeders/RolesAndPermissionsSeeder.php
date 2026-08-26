@@ -34,6 +34,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'Ver Usuarios',
             'Ver Roles',
             'Ver Permisos',
+            'Ver Configuracion',
         ];
 
         // Permisos de acciones específicas dentro de un módulo.

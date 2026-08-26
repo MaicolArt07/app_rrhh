@@ -598,6 +598,20 @@ test('dashboard renders KPIs and reportes can export excel', function () {
         ->assertFileDownloaded();
 });
 
+test('admin can view configuracion, run a backup, and export the activity log', function () {
+    $admin = User::where('email', 'admin@rrhh.local')->first();
+
+    $this->actingAs($admin)
+        ->get('/configuracion')
+        ->assertOk()
+        ->assertSee('Respaldo de Base de Datos');
+
+    \Livewire\Livewire::actingAs($admin)
+        ->test(\App\Livewire\LivewireConfiguracion::class)
+        ->call('exportarHistorial')
+        ->assertFileDownloaded();
+});
+
 test('admin can access users, roles, permissions modules', function () {
     $admin = User::where('email', 'admin@rrhh.local')->first();
 

@@ -402,10 +402,11 @@
 
 
                 <!-- ✅ GESTIÓN DE USUARIOS -->
-                @canany(['Ver Usuarios', 'Ver Roles', 'Ver Permisos'])
+                @canany(['Ver Usuarios', 'Ver Roles', 'Ver Permisos', 'Ver Configuracion'])
                 <flux:navlist.group :heading="__('Gestión de Usuarios')" class="grid mt-3">
                     @php
-                        $isUserSection = request()->routeIs('users*') || request()->routeIs('roles*') || request()->routeIs('permissions*');
+                        $isUserSection = request()->routeIs('users*') || request()->routeIs('roles*')
+                            || request()->routeIs('permissions*') || request()->routeIs('configuracion*');
                     @endphp
 
                     <details class="group" @if($isUserSection) open @endif>
@@ -446,6 +447,17 @@
                                 class="{{ request()->routeIs('permissions*') ? 'bg-zinc-200 dark:bg-zinc-800 font-semibold rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
                             >
                                 <i class="bi bi-shield-lock-fill me-2"></i> {{ __('Permisos') }}
+                            </flux:navlist.item>
+                            @endcan
+
+                            @can('Ver Configuracion')
+                            <flux:navlist.item
+                                :href="route('configuracion')"
+                                :current="request()->routeIs('configuracion*')"
+                                wire:navigate
+                                class="{{ request()->routeIs('configuracion*') ? 'bg-zinc-200 dark:bg-zinc-800 font-semibold rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
+                            >
+                                <i class="bi bi-gear-fill me-2"></i> {{ __('Configuración') }}
                             </flux:navlist.item>
                             @endcan
                         </div>
