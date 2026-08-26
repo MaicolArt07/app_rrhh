@@ -166,6 +166,62 @@
                 </flux:navlist.group>
                 @endcanany
 
+                <!-- ✅ ASISTENCIA -->
+                @can('Ver Asistencia')
+                <flux:navlist.group :heading="__('Asistencia')" class="grid mt-3">
+                    @php
+                        $isAttendanceSection = request()->routeIs('asistencia*') || request()->routeIs('turnos*')
+                            || request()->routeIs('feriados*') || request()->routeIs('permisos-laborales*');
+                    @endphp
+
+                    <details class="group" @if($isAttendanceSection) open @endif>
+                        <summary class="flex items-center cursor-pointer rounded-xl px-3 py-2.5 transition hover:bg-zinc-200 dark:hover:bg-zinc-800 {{ $isAttendanceSection ? 'bg-zinc-200 font-semibold text-zinc-900 dark:bg-zinc-800 dark:text-white' : 'text-zinc-700 dark:text-zinc-200' }}">
+                            <i class="bi bi-clock-fill me-2"></i>
+                            <span>{{ __('Asistencia') }}</span>
+                            <i class="bi bi-chevron-down ms-auto transition-transform duration-200 group-open:rotate-180"></i>
+                        </summary>
+
+                        <div class="ml-5 mt-2 space-y-1 border-l border-zinc-200 pl-3 dark:border-zinc-700">
+                            <flux:navlist.item
+                                :href="route('asistencia')"
+                                :current="request()->routeIs('asistencia*')"
+                                wire:navigate
+                                class="{{ request()->routeIs('asistencia*') ? 'bg-zinc-200 dark:bg-zinc-800 font-semibold rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
+                            >
+                                <i class="bi bi-calendar-check-fill me-2"></i> {{ __('Marcajes') }}
+                            </flux:navlist.item>
+
+                            <flux:navlist.item
+                                :href="route('permisos-laborales')"
+                                :current="request()->routeIs('permisos-laborales*')"
+                                wire:navigate
+                                class="{{ request()->routeIs('permisos-laborales*') ? 'bg-zinc-200 dark:bg-zinc-800 font-semibold rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
+                            >
+                                <i class="bi bi-envelope-paper-fill me-2"></i> {{ __('Permisos') }}
+                            </flux:navlist.item>
+
+                            <flux:navlist.item
+                                :href="route('turnos')"
+                                :current="request()->routeIs('turnos*')"
+                                wire:navigate
+                                class="{{ request()->routeIs('turnos*') ? 'bg-zinc-200 dark:bg-zinc-800 font-semibold rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
+                            >
+                                <i class="bi bi-hourglass-split me-2"></i> {{ __('Turnos') }}
+                            </flux:navlist.item>
+
+                            <flux:navlist.item
+                                :href="route('feriados')"
+                                :current="request()->routeIs('feriados*')"
+                                wire:navigate
+                                class="{{ request()->routeIs('feriados*') ? 'bg-zinc-200 dark:bg-zinc-800 font-semibold rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
+                            >
+                                <i class="bi bi-flag-fill me-2"></i> {{ __('Feriados') }}
+                            </flux:navlist.item>
+                        </div>
+                    </details>
+                </flux:navlist.group>
+                @endcan
+
                 <!-- ✅ CATÁLOGOS DEL SISTEMA -->
                 @canany(['Ver Tipos', 'Ver Gestiones'])
                 <flux:navlist.group :heading="__('Catálogos')" class="grid mt-3">

@@ -169,6 +169,91 @@ test('admin can create a contrato and a documento for an empleado', function () 
     expect(\App\Models\DocumentoEmpleado::where('id_empleado', $empleado->id)->exists())->toBeTrue();
 });
 
+test('admin can manage turnos, feriados, asistencia and permisos laborales', function () {
+    $admin = User::where('email', 'admin@rrhh.local')->first();
+
+    $this->actingAs($admin)->get('/turnos')->assertOk();
+    $this->actingAs($admin)->get('/feriados')->assertOk();
+    $this->actingAs($admin)->get('/asistencia')->assertOk();
+    $this->actingAs($admin)->get('/permisos-laborales')->assertOk();
+
+    \Livewire\Livewire::actingAs($admin)
+        ->test(\App\Livewire\LivewireTurnos::class)
+        ->set('form.nombre', 'Turno Mañana')
+        ->set('form.hora_entrada', '08:00')
+        ->set('form.hora_salida', '17:00')
+        ->call('save')
+        ->assertHasNoErrors();
+
+    expect(\App\Models\Turno::where('nombre', 'Turno Mañana')->exists())->toBeTrue();
+
+    $gestionActual = \App\Models\Gestion::where('anio', now()->year)->first();
+
+    \Livewire\Livewire::actingAs($admin)
+        ->test(\App\Livewire\LivewireFeriados::class)
+        ->set('form.id_gestion', $gestionActual->id)
+        ->set('form.fecha', now()->addDays(10)->format('Y-m-d'))
+        ->set('form.descripcion', 'Día de prueba')
+        ->call('save')
+        ->assertHasNoErrors();
+
+    expect(\App\Models\Feriado::where('descripcion', 'Día de prueba')->exists())->toBeTrue();
+
+    $departamento = \App\Models\Departamento::create(['nombre' => 'Ventas', 'estado' => true]);
+    $cargo = \App\Models\Cargo::create(['id_departamento' => $departamento->id, 'nombre' => 'Vendedor', 'sueldo_base' => 4000, 'estado' => true]);
+    $tipoDocumento = \App\Models\Tipo::where('categoria', 'tipo_documento')->first();
+    $persona = \App\Models\Persona::create([
+        'primer_nombre' => 'Marta', 'primer_apellido' => 'Ruiz',
+        'id_tipo_documento' => $tipoDocumento->id, 'numero_documento' => '1112223334',
+        'genero' => 'femenino', 'estado' => true,
+    ]);
+    $estadoActivo = \App\Models\Tipo::where('categoria', 'estado_empleado')->where('codigo', 'activo')->first();
+    $empleado = \App\Models\Empleado::create([
+        'id_persona' => $persona->id, 'codigo_empleado' => 'EMP-TEST-3', 'id_cargo' => $cargo->id,
+        'id_departamento' => $departamento->id, 'fecha_ingreso' => '2026-01-01', 'sueldo_actual' => 4000,
+        'id_estado_empleado' => $estadoActivo->id, 'estado' => true,
+    ]);
+    $estadoAsistencia = \App\Models\Tipo::where('categoria', 'estado_asistencia')->where('codigo', 'puntual')->first();
+
+    \Livewire\Livewire::actingAs($admin)
+        ->test(\App\Livewire\LivewireAsistencia::class)
+        ->set('form.id_empleado', $empleado->id)
+        ->set('form.fecha', now()->format('Y-m-d'))
+        ->set('form.hora_entrada', '08:00')
+        ->set('form.hora_salida', '17:00')
+        ->set('form.id_estado_asistencia', $estadoAsistencia->id)
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $asistencia = \App\Models\Asistencia::where('id_empleado', $empleado->id)->first();
+    expect($asistencia)->not->toBeNull();
+    expect((float) $asistencia->horas_trabajadas)->toBe(9.0);
+    expect($asistencia->id_gestion)->not->toBeNull();
+    expect($asistencia->id_mes)->not->toBeNull();
+
+    $tipoPermiso = \App\Models\Tipo::where('categoria', 'tipo_permiso')->first();
+
+    \Livewire\Livewire::actingAs($admin)
+        ->test(\App\Livewire\LivewirePermisosLaborales::class)
+        ->set('form.id_empleado', $empleado->id)
+        ->set('form.id_tipo_permiso', $tipoPermiso->id)
+        ->set('form.fecha_inicio', now()->addDays(5)->format('Y-m-d'))
+        ->set('form.fecha_fin', now()->addDays(6)->format('Y-m-d'))
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $permiso = \App\Models\PermisoLaboral::where('id_empleado', $empleado->id)->first();
+    expect($permiso)->not->toBeNull();
+    expect($permiso->estado_solicitud)->toBe('pendiente');
+    expect($permiso->dias_solicitados)->toBe('2.00');
+
+    \Livewire\Livewire::actingAs($admin)
+        ->test(\App\Livewire\LivewirePermisosLaborales::class)
+        ->call('aprobar', $permiso->id);
+
+    expect($permiso->fresh()->estado_solicitud)->toBe('aprobado');
+});
+
 test('admin can access users, roles, permissions modules', function () {
     $admin = User::where('email', 'admin@rrhh.local')->first();
 

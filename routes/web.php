@@ -1,16 +1,20 @@
 <?php
 
+use App\Livewire\LivewireAsistencia;
 use App\Livewire\LivewireCargos;
 use App\Livewire\LivewireContratos;
 use App\Livewire\LivewireDepartamentos;
 use App\Livewire\LivewireDocumentos;
 use App\Livewire\LivewireEmpleados;
+use App\Livewire\LivewireFeriados;
 use App\Livewire\LivewireGestiones;
 use App\Livewire\LivewireHome;
+use App\Livewire\LivewirePermisosLaborales;
 use App\Livewire\LivewirePermissions;
 use App\Livewire\LivewirePersonas;
 use App\Livewire\LivewireRoles;
 use App\Livewire\LivewireTipos;
+use App\Livewire\LivewireTurnos;
 use App\Livewire\LivewireUsers;
 use App\Livewire\Settings\Appearance;
 use App\Livewire\Settings\Password;
@@ -47,6 +51,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/empleados', LivewireEmpleados::class)->middleware('can:Ver Empleados')->name('empleados');
     Route::get('/contratos', LivewireContratos::class)->middleware('can:Ver Contratos')->name('contratos');
     Route::get('/documentos', LivewireDocumentos::class)->middleware('can:Ver Documentos')->name('documentos');
+    Route::get('/turnos', LivewireTurnos::class)->middleware('can:Ver Asistencia')->name('turnos');
+    Route::get('/feriados', LivewireFeriados::class)->middleware('can:Ver Asistencia')->name('feriados');
+    Route::get('/asistencia', LivewireAsistencia::class)->middleware('can:Ver Asistencia')->name('asistencia');
+    Route::get('/permisos-laborales', LivewirePermisosLaborales::class)->middleware('can:Ver Asistencia')->name('permisos-laborales');
 
     Route::get('settings/profile', Profile::class)->name('settings.profile');
     Route::get('settings/password', Password::class)->name('settings.password');
