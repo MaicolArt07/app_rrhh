@@ -455,6 +455,49 @@ test('admin can calculate and register a liquidacion', function () {
     expect((float) $liquidacion->total_liquidacion)->toBeGreaterThan(0);
 });
 
+test('admin can register a performance evaluation with dynamic criteria', function () {
+    $admin = User::where('email', 'admin@rrhh.local')->first();
+
+    $this->actingAs($admin)->get('/evaluaciones')->assertOk();
+
+    $departamento = \App\Models\Departamento::create(['nombre' => 'Soporte', 'estado' => true]);
+    $cargo = \App\Models\Cargo::create(['id_departamento' => $departamento->id, 'nombre' => 'Técnico', 'sueldo_base' => 4200, 'estado' => true]);
+    $tipoDocumento = \App\Models\Tipo::where('categoria', 'tipo_documento')->first();
+    $persona = \App\Models\Persona::create([
+        'primer_nombre' => 'Pablo', 'primer_apellido' => 'Ortiz',
+        'id_tipo_documento' => $tipoDocumento->id, 'numero_documento' => '5556667778',
+        'genero' => 'masculino', 'estado' => true,
+    ]);
+    $estadoActivo = \App\Models\Tipo::where('categoria', 'estado_empleado')->where('codigo', 'activo')->first();
+    $empleado = \App\Models\Empleado::create([
+        'id_persona' => $persona->id, 'codigo_empleado' => 'EMP-TEST-8', 'id_cargo' => $cargo->id,
+        'id_departamento' => $departamento->id, 'fecha_ingreso' => '2026-01-01', 'sueldo_actual' => 4200,
+        'id_estado_empleado' => $estadoActivo->id, 'estado' => true,
+    ]);
+    $gestionActual = \App\Models\Gestion::where('anio', now()->year)->first();
+
+    \Livewire\Livewire::actingAs($admin)
+        ->test(\App\Livewire\LivewireEvaluaciones::class)
+        ->call('openModal')
+        ->set('form.id_empleado', $empleado->id)
+        ->set('form.id_gestion', $gestionActual->id)
+        ->set('form.semestre', 'primero')
+        ->set('form.fecha_evaluacion', now()->format('Y-m-d'))
+        ->set('criterios.0.puntuacion', 95)
+        ->set('criterios.1.puntuacion', 92)
+        ->set('criterios.2.puntuacion', 98)
+        ->set('criterios.3.puntuacion', 90)
+        ->set('criterios.4.puntuacion', 96)
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $evaluacion = \App\Models\EvaluacionDesempeno::where('id_empleado', $empleado->id)->first();
+    expect($evaluacion)->not->toBeNull();
+    expect((float) $evaluacion->puntuacion_total)->toBe(94.2);
+    expect($evaluacion->resultadoEvaluacion->codigo)->toBe('excelente');
+    expect($evaluacion->detalles)->toHaveCount(5);
+});
+
 test('admin can access users, roles, permissions modules', function () {
     $admin = User::where('email', 'admin@rrhh.local')->first();
 

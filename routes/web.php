@@ -6,6 +6,7 @@ use App\Livewire\LivewireContratos;
 use App\Livewire\LivewireDepartamentos;
 use App\Livewire\LivewireDocumentos;
 use App\Livewire\LivewireEmpleados;
+use App\Livewire\LivewireEvaluaciones;
 use App\Livewire\LivewireFeriados;
 use App\Livewire\LivewireAnticipos;
 use App\Livewire\LivewireConceptosPago;
@@ -69,6 +70,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/planillas/boleta/{detalle}', [BoletaController::class, 'download'])->middleware('can:Ver Planillas')->name('planillas.boleta');
     Route::get('/anticipos', LivewireAnticipos::class)->middleware('can:Ver Anticipos')->name('anticipos');
     Route::get('/liquidaciones', LivewireLiquidaciones::class)->middleware('can:Ver Liquidaciones')->name('liquidaciones');
+    Route::get('/evaluaciones', LivewireEvaluaciones::class)->middleware('can:Ver Evaluaciones')->name('evaluaciones');
 
     Route::get('settings/profile', Profile::class)->name('settings.profile');
     Route::get('settings/password', Password::class)->name('settings.password');
