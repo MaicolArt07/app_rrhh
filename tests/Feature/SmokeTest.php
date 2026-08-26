@@ -111,6 +111,64 @@ test('admin can manage departamentos, cargos and empleados end to end', function
     expect(\App\Models\Empleado::where('codigo_empleado', 'EMP-TEST-1')->exists())->toBeTrue();
 });
 
+test('admin can create a contrato and a documento for an empleado', function () {
+    $admin = User::where('email', 'admin@rrhh.local')->first();
+
+    $this->actingAs($admin)->get('/contratos')->assertOk();
+    $this->actingAs($admin)->get('/documentos')->assertOk();
+
+    $departamento = \App\Models\Departamento::create(['nombre' => 'Operaciones', 'estado' => true]);
+    $cargo = \App\Models\Cargo::create([
+        'id_departamento' => $departamento->id,
+        'nombre' => 'Operario',
+        'sueldo_base' => 4500,
+        'estado' => true,
+    ]);
+    $tipoDocumento = \App\Models\Tipo::where('categoria', 'tipo_documento')->first();
+    $persona = \App\Models\Persona::create([
+        'primer_nombre' => 'Carlos',
+        'primer_apellido' => 'López',
+        'id_tipo_documento' => $tipoDocumento->id,
+        'numero_documento' => '5554443332',
+        'genero' => 'masculino',
+        'estado' => true,
+    ]);
+    $estadoActivo = \App\Models\Tipo::where('categoria', 'estado_empleado')->where('codigo', 'activo')->first();
+    $empleado = \App\Models\Empleado::create([
+        'id_persona' => $persona->id,
+        'codigo_empleado' => 'EMP-TEST-2',
+        'id_cargo' => $cargo->id,
+        'id_departamento' => $departamento->id,
+        'fecha_ingreso' => '2026-01-01',
+        'sueldo_actual' => 4500,
+        'id_estado_empleado' => $estadoActivo->id,
+        'estado' => true,
+    ]);
+
+    $tipoContrato = \App\Models\Tipo::where('categoria', 'tipo_contrato')->first();
+
+    \Livewire\Livewire::actingAs($admin)
+        ->test(\App\Livewire\LivewireContratos::class)
+        ->set('form.id_empleado', $empleado->id)
+        ->set('form.id_tipo_contrato', $tipoContrato->id)
+        ->set('form.fecha_inicio', '2026-01-01')
+        ->call('save')
+        ->assertHasNoErrors();
+
+    expect(\App\Models\Contrato::where('id_empleado', $empleado->id)->exists())->toBeTrue();
+
+    $tipoDocEmpleado = \App\Models\Tipo::where('categoria', 'tipo_documento_empleado')->first();
+
+    \Livewire\Livewire::actingAs($admin)
+        ->test(\App\Livewire\LivewireDocumentos::class)
+        ->set('form.id_empleado', $empleado->id)
+        ->set('form.id_tipo_documento_empleado', $tipoDocEmpleado->id)
+        ->call('save')
+        ->assertHasNoErrors();
+
+    expect(\App\Models\DocumentoEmpleado::where('id_empleado', $empleado->id)->exists())->toBeTrue();
+});
+
 test('admin can access users, roles, permissions modules', function () {
     $admin = User::where('email', 'admin@rrhh.local')->first();
 

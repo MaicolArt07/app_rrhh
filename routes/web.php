@@ -1,7 +1,9 @@
 <?php
 
 use App\Livewire\LivewireCargos;
+use App\Livewire\LivewireContratos;
 use App\Livewire\LivewireDepartamentos;
+use App\Livewire\LivewireDocumentos;
 use App\Livewire\LivewireEmpleados;
 use App\Livewire\LivewireGestiones;
 use App\Livewire\LivewireHome;
@@ -43,6 +45,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/departamentos', LivewireDepartamentos::class)->middleware('can:Ver Departamentos')->name('departamentos');
     Route::get('/cargos', LivewireCargos::class)->middleware('can:Ver Cargos')->name('cargos');
     Route::get('/empleados', LivewireEmpleados::class)->middleware('can:Ver Empleados')->name('empleados');
+    Route::get('/contratos', LivewireContratos::class)->middleware('can:Ver Contratos')->name('contratos');
+    Route::get('/documentos', LivewireDocumentos::class)->middleware('can:Ver Documentos')->name('documentos');
 
     Route::get('settings/profile', Profile::class)->name('settings.profile');
     Route::get('settings/password', Password::class)->name('settings.password');

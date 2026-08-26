@@ -80,11 +80,12 @@
                 </flux:navlist.group>
 
                 <!-- ✅ GESTIÓN DE PERSONAL -->
-                @canany(['Ver Personas', 'Ver Empleados', 'Ver Cargos', 'Ver Departamentos'])
+                @canany(['Ver Personas', 'Ver Empleados', 'Ver Cargos', 'Ver Departamentos', 'Ver Contratos', 'Ver Documentos'])
                 <flux:navlist.group :heading="__('Gestión de Personal')" class="grid mt-3">
                     @php
                         $isStaffSection = request()->routeIs('personas*') || request()->routeIs('empleados*')
-                            || request()->routeIs('cargos*') || request()->routeIs('departamentos*');
+                            || request()->routeIs('cargos*') || request()->routeIs('departamentos*')
+                            || request()->routeIs('contratos*') || request()->routeIs('documentos*');
                     @endphp
 
                     <details class="group" @if($isStaffSection) open @endif>
@@ -136,6 +137,28 @@
                                 class="{{ request()->routeIs('departamentos*') ? 'bg-zinc-200 dark:bg-zinc-800 font-semibold rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
                             >
                                 <i class="bi bi-diagram-3-fill me-2"></i> {{ __('Departamentos') }}
+                            </flux:navlist.item>
+                            @endcan
+
+                            @can('Ver Contratos')
+                            <flux:navlist.item
+                                :href="route('contratos')"
+                                :current="request()->routeIs('contratos*')"
+                                wire:navigate
+                                class="{{ request()->routeIs('contratos*') ? 'bg-zinc-200 dark:bg-zinc-800 font-semibold rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
+                            >
+                                <i class="bi bi-file-earmark-text-fill me-2"></i> {{ __('Contratos') }}
+                            </flux:navlist.item>
+                            @endcan
+
+                            @can('Ver Documentos')
+                            <flux:navlist.item
+                                :href="route('documentos')"
+                                :current="request()->routeIs('documentos*')"
+                                wire:navigate
+                                class="{{ request()->routeIs('documentos*') ? 'bg-zinc-200 dark:bg-zinc-800 font-semibold rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
+                            >
+                                <i class="bi bi-folder-fill me-2"></i> {{ __('Documentos') }}
                             </flux:navlist.item>
                             @endcan
                         </div>
