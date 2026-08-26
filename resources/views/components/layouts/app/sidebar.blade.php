@@ -167,11 +167,12 @@
                 @endcanany
 
                 <!-- ✅ ASISTENCIA -->
-                @can('Ver Asistencia')
+                @canany(['Ver Asistencia', 'Ver Vacaciones', 'Ver Horas Extra'])
                 <flux:navlist.group :heading="__('Asistencia')" class="grid mt-3">
                     @php
                         $isAttendanceSection = request()->routeIs('asistencia*') || request()->routeIs('turnos*')
-                            || request()->routeIs('feriados*') || request()->routeIs('permisos-laborales*');
+                            || request()->routeIs('feriados*') || request()->routeIs('permisos-laborales*')
+                            || request()->routeIs('vacaciones*') || request()->routeIs('horas-extra*');
                     @endphp
 
                     <details class="group" @if($isAttendanceSection) open @endif>
@@ -217,10 +218,32 @@
                             >
                                 <i class="bi bi-flag-fill me-2"></i> {{ __('Feriados') }}
                             </flux:navlist.item>
+
+                            @can('Ver Vacaciones')
+                            <flux:navlist.item
+                                :href="route('vacaciones')"
+                                :current="request()->routeIs('vacaciones*')"
+                                wire:navigate
+                                class="{{ request()->routeIs('vacaciones*') ? 'bg-zinc-200 dark:bg-zinc-800 font-semibold rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
+                            >
+                                <i class="bi bi-airplane-fill me-2"></i> {{ __('Vacaciones') }}
+                            </flux:navlist.item>
+                            @endcan
+
+                            @can('Ver Horas Extra')
+                            <flux:navlist.item
+                                :href="route('horas-extra')"
+                                :current="request()->routeIs('horas-extra*')"
+                                wire:navigate
+                                class="{{ request()->routeIs('horas-extra*') ? 'bg-zinc-200 dark:bg-zinc-800 font-semibold rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
+                            >
+                                <i class="bi bi-clock-history me-2"></i> {{ __('Horas Extra') }}
+                            </flux:navlist.item>
+                            @endcan
                         </div>
                     </details>
                 </flux:navlist.group>
-                @endcan
+                @endcanany
 
                 <!-- ✅ CATÁLOGOS DEL SISTEMA -->
                 @canany(['Ver Tipos', 'Ver Gestiones'])

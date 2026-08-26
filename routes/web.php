@@ -9,10 +9,12 @@ use App\Livewire\LivewireEmpleados;
 use App\Livewire\LivewireFeriados;
 use App\Livewire\LivewireGestiones;
 use App\Livewire\LivewireHome;
+use App\Livewire\LivewireHorasExtra;
 use App\Livewire\LivewirePermisosLaborales;
 use App\Livewire\LivewirePermissions;
 use App\Livewire\LivewirePersonas;
 use App\Livewire\LivewireRoles;
+use App\Livewire\LivewireSaldosVacaciones;
 use App\Livewire\LivewireTipos;
 use App\Livewire\LivewireTurnos;
 use App\Livewire\LivewireUsers;
@@ -55,6 +57,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/feriados', LivewireFeriados::class)->middleware('can:Ver Asistencia')->name('feriados');
     Route::get('/asistencia', LivewireAsistencia::class)->middleware('can:Ver Asistencia')->name('asistencia');
     Route::get('/permisos-laborales', LivewirePermisosLaborales::class)->middleware('can:Ver Asistencia')->name('permisos-laborales');
+    Route::get('/vacaciones', LivewireSaldosVacaciones::class)->middleware('can:Ver Vacaciones')->name('vacaciones');
+    Route::get('/horas-extra', LivewireHorasExtra::class)->middleware('can:Ver Horas Extra')->name('horas-extra');
 
     Route::get('settings/profile', Profile::class)->name('settings.profile');
     Route::get('settings/password', Password::class)->name('settings.password');
