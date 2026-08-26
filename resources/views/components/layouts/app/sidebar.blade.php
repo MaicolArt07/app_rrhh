@@ -347,6 +347,18 @@
                 </flux:navlist.item>
                 @endcan
 
+                <!-- ✅ REPORTES -->
+                @can('Ver Reportes')
+                <flux:navlist.item
+                    :href="route('reportes')"
+                    :current="request()->routeIs('reportes*')"
+                    wire:navigate
+                    class="mt-1 rounded-xl px-3 py-2.5 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                >
+                    <i class="bi bi-bar-chart-fill me-2"></i> {{ __('Reportes') }}
+                </flux:navlist.item>
+                @endcan
+
                 <!-- ✅ CATÁLOGOS DEL SISTEMA -->
                 @canany(['Ver Tipos', 'Ver Gestiones'])
                 <flux:navlist.group :heading="__('Catálogos')" class="grid mt-3">

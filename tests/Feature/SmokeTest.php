@@ -586,6 +586,18 @@ test('rrhh:revisar-vencimientos command notifies about expiring contracts', func
     expect(\App\Models\Contrato::where('id_empleado', $empleado->id)->first()->notificado_vencimiento)->toBeTrue();
 });
 
+test('dashboard renders KPIs and reportes can export excel', function () {
+    $admin = User::where('email', 'admin@rrhh.local')->first();
+
+    $this->actingAs($admin)->get('/')->assertOk()->assertSee('Empleados Activos');
+    $this->actingAs($admin)->get('/reportes')->assertOk();
+
+    \Livewire\Livewire::actingAs($admin)
+        ->test(\App\Livewire\LivewireReportes::class)
+        ->call('exportarEmpleados')
+        ->assertFileDownloaded();
+});
+
 test('admin can access users, roles, permissions modules', function () {
     $admin = User::where('email', 'admin@rrhh.local')->first();
 
