@@ -246,10 +246,11 @@
                 @endcanany
 
                 <!-- ✅ PLANILLAS -->
-                @can('Ver Planillas')
+                @canany(['Ver Planillas', 'Ver Anticipos'])
                 <flux:navlist.group :heading="__('Planillas')" class="grid mt-3">
                     @php
-                        $isPayrollSection = request()->routeIs('planillas*') || request()->routeIs('conceptos-pago*');
+                        $isPayrollSection = request()->routeIs('planillas*') || request()->routeIs('conceptos-pago*')
+                            || request()->routeIs('anticipos*');
                     @endphp
 
                     <details class="group" @if($isPayrollSection) open @endif>
@@ -277,10 +278,21 @@
                             >
                                 <i class="bi bi-list-check me-2"></i> {{ __('Conceptos de Pago') }}
                             </flux:navlist.item>
+
+                            @can('Ver Anticipos')
+                            <flux:navlist.item
+                                :href="route('anticipos')"
+                                :current="request()->routeIs('anticipos*')"
+                                wire:navigate
+                                class="{{ request()->routeIs('anticipos*') ? 'bg-zinc-200 dark:bg-zinc-800 font-semibold rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
+                            >
+                                <i class="bi bi-piggy-bank-fill me-2"></i> {{ __('Anticipos y Préstamos') }}
+                            </flux:navlist.item>
+                            @endcan
                         </div>
                     </details>
                 </flux:navlist.group>
-                @endcan
+                @endcanany
 
                 <!-- ✅ CATÁLOGOS DEL SISTEMA -->
                 @canany(['Ver Tipos', 'Ver Gestiones'])

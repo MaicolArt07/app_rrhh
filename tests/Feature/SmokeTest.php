@@ -370,6 +370,53 @@ test('admin can generate a planilla and download a boleta', function () {
     expect($detalle->fresh()->estado_pago)->toBe('pagado');
 });
 
+test('admin can manage anticipos and register payments', function () {
+    $admin = User::where('email', 'admin@rrhh.local')->first();
+
+    $this->actingAs($admin)->get('/anticipos')->assertOk();
+
+    $departamento = \App\Models\Departamento::create(['nombre' => 'Producción', 'estado' => true]);
+    $cargo = \App\Models\Cargo::create(['id_departamento' => $departamento->id, 'nombre' => 'Supervisor', 'sueldo_base' => 4800, 'estado' => true]);
+    $tipoDocumento = \App\Models\Tipo::where('categoria', 'tipo_documento')->first();
+    $persona = \App\Models\Persona::create([
+        'primer_nombre' => 'Diego', 'primer_apellido' => 'Ramírez',
+        'id_tipo_documento' => $tipoDocumento->id, 'numero_documento' => '3334445556',
+        'genero' => 'masculino', 'estado' => true,
+    ]);
+    $estadoActivo = \App\Models\Tipo::where('categoria', 'estado_empleado')->where('codigo', 'activo')->first();
+    $empleado = \App\Models\Empleado::create([
+        'id_persona' => $persona->id, 'codigo_empleado' => 'EMP-TEST-6', 'id_cargo' => $cargo->id,
+        'id_departamento' => $departamento->id, 'fecha_ingreso' => '2026-01-01', 'sueldo_actual' => 4800,
+        'id_estado_empleado' => $estadoActivo->id, 'estado' => true,
+    ]);
+    $tipoAnticipo = \App\Models\Tipo::where('categoria', 'tipo_anticipo')->first();
+
+    \Livewire\Livewire::actingAs($admin)
+        ->test(\App\Livewire\LivewireAnticipos::class)
+        ->set('form.id_empleado', $empleado->id)
+        ->set('form.id_tipo_anticipo', $tipoAnticipo->id)
+        ->set('form.monto_total', 1000)
+        ->set('form.numero_cuotas', 4)
+        ->set('form.fecha_otorgado', now()->format('Y-m-d'))
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $anticipo = \App\Models\AnticipoPrestamo::where('id_empleado', $empleado->id)->first();
+    expect($anticipo)->not->toBeNull();
+    expect((float) $anticipo->monto_cuota)->toBe(250.0);
+    expect((float) $anticipo->saldo_pendiente)->toBe(1000.0);
+
+    \Livewire\Livewire::actingAs($admin)
+        ->test(\App\Livewire\LivewireAnticipos::class)
+        ->call('abrirPago', $anticipo->id)
+        ->set('montoPago', 1000)
+        ->call('registrarPago')
+        ->assertHasNoErrors();
+
+    expect((float) $anticipo->fresh()->saldo_pendiente)->toBe(0.0);
+    expect($anticipo->fresh()->estado_anticipo)->toBe('pagado');
+});
+
 test('admin can access users, roles, permissions modules', function () {
     $admin = User::where('email', 'admin@rrhh.local')->first();
 
