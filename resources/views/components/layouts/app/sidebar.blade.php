@@ -79,6 +79,70 @@
 
                 </flux:navlist.group>
 
+                <!-- ✅ GESTIÓN DE PERSONAL -->
+                @canany(['Ver Personas', 'Ver Empleados', 'Ver Cargos', 'Ver Departamentos'])
+                <flux:navlist.group :heading="__('Gestión de Personal')" class="grid mt-3">
+                    @php
+                        $isStaffSection = request()->routeIs('personas*') || request()->routeIs('empleados*')
+                            || request()->routeIs('cargos*') || request()->routeIs('departamentos*');
+                    @endphp
+
+                    <details class="group" @if($isStaffSection) open @endif>
+                        <summary class="flex items-center cursor-pointer rounded-xl px-3 py-2.5 transition hover:bg-zinc-200 dark:hover:bg-zinc-800 {{ $isStaffSection ? 'bg-zinc-200 font-semibold text-zinc-900 dark:bg-zinc-800 dark:text-white' : 'text-zinc-700 dark:text-zinc-200' }}">
+                            <i class="bi bi-person-vcard-fill me-2"></i>
+                            <span>{{ __('Gestión de Personal') }}</span>
+                            <i class="bi bi-chevron-down ms-auto transition-transform duration-200 group-open:rotate-180"></i>
+                        </summary>
+
+                        <div class="ml-5 mt-2 space-y-1 border-l border-zinc-200 pl-3 dark:border-zinc-700">
+                            @can('Ver Personas')
+                            <flux:navlist.item
+                                :href="route('personas')"
+                                :current="request()->routeIs('personas*')"
+                                wire:navigate
+                                class="{{ request()->routeIs('personas*') ? 'bg-zinc-200 dark:bg-zinc-800 font-semibold rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
+                            >
+                                <i class="bi bi-person-badge-fill me-2"></i> {{ __('Personas') }}
+                            </flux:navlist.item>
+                            @endcan
+
+                            @can('Ver Empleados')
+                            <flux:navlist.item
+                                :href="route('empleados')"
+                                :current="request()->routeIs('empleados*')"
+                                wire:navigate
+                                class="{{ request()->routeIs('empleados*') ? 'bg-zinc-200 dark:bg-zinc-800 font-semibold rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
+                            >
+                                <i class="bi bi-person-workspace me-2"></i> {{ __('Empleados') }}
+                            </flux:navlist.item>
+                            @endcan
+
+                            @can('Ver Cargos')
+                            <flux:navlist.item
+                                :href="route('cargos')"
+                                :current="request()->routeIs('cargos*')"
+                                wire:navigate
+                                class="{{ request()->routeIs('cargos*') ? 'bg-zinc-200 dark:bg-zinc-800 font-semibold rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
+                            >
+                                <i class="bi bi-briefcase-fill me-2"></i> {{ __('Cargos') }}
+                            </flux:navlist.item>
+                            @endcan
+
+                            @can('Ver Departamentos')
+                            <flux:navlist.item
+                                :href="route('departamentos')"
+                                :current="request()->routeIs('departamentos*')"
+                                wire:navigate
+                                class="{{ request()->routeIs('departamentos*') ? 'bg-zinc-200 dark:bg-zinc-800 font-semibold rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
+                            >
+                                <i class="bi bi-diagram-3-fill me-2"></i> {{ __('Departamentos') }}
+                            </flux:navlist.item>
+                            @endcan
+                        </div>
+                    </details>
+                </flux:navlist.group>
+                @endcanany
+
                 <!-- ✅ CATÁLOGOS DEL SISTEMA -->
                 @canany(['Ver Tipos', 'Ver Gestiones'])
                 <flux:navlist.group :heading="__('Catálogos')" class="grid mt-3">

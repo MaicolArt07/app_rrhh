@@ -38,6 +38,79 @@ test('admin can access gestiones module', function () {
         ->assertOk();
 });
 
+test('admin can access personas module and create a persona', function () {
+    $admin = User::where('email', 'admin@rrhh.local')->first();
+    $tipoDocumento = \App\Models\Tipo::where('categoria', 'tipo_documento')->first();
+
+    $this->actingAs($admin)
+        ->get('/personas')
+        ->assertOk();
+
+    \Livewire\Livewire::actingAs($admin)
+        ->test(\App\Livewire\LivewirePersonas::class)
+        ->set('form.primer_nombre', 'Juan')
+        ->set('form.primer_apellido', 'Pérez')
+        ->set('form.id_tipo_documento', $tipoDocumento->id)
+        ->set('form.numero_documento', '1234567890101')
+        ->set('form.genero', 'masculino')
+        ->call('save')
+        ->assertHasNoErrors();
+
+    expect(\App\Models\Persona::where('numero_documento', '1234567890101')->exists())->toBeTrue();
+});
+
+test('admin can manage departamentos, cargos and empleados end to end', function () {
+    $admin = User::where('email', 'admin@rrhh.local')->first();
+
+    $this->actingAs($admin)->get('/departamentos')->assertOk();
+    $this->actingAs($admin)->get('/cargos')->assertOk();
+    $this->actingAs($admin)->get('/empleados')->assertOk();
+
+    \Livewire\Livewire::actingAs($admin)
+        ->test(\App\Livewire\LivewireDepartamentos::class)
+        ->set('form.nombre', 'Tecnología')
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $departamento = \App\Models\Departamento::where('nombre', 'Tecnología')->firstOrFail();
+
+    \Livewire\Livewire::actingAs($admin)
+        ->test(\App\Livewire\LivewireCargos::class)
+        ->set('form.id_departamento', $departamento->id)
+        ->set('form.nombre', 'Desarrollador')
+        ->set('form.sueldo_base', 6000)
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $cargo = \App\Models\Cargo::where('nombre', 'Desarrollador')->firstOrFail();
+
+    $tipoDocumento = \App\Models\Tipo::where('categoria', 'tipo_documento')->first();
+    $persona = \App\Models\Persona::create([
+        'primer_nombre' => 'Ana',
+        'primer_apellido' => 'García',
+        'id_tipo_documento' => $tipoDocumento->id,
+        'numero_documento' => '9998887776',
+        'genero' => 'femenino',
+        'estado' => true,
+    ]);
+
+    $estadoActivo = \App\Models\Tipo::where('categoria', 'estado_empleado')->where('codigo', 'activo')->first();
+
+    \Livewire\Livewire::actingAs($admin)
+        ->test(\App\Livewire\LivewireEmpleados::class)
+        ->set('form.id_persona', $persona->id)
+        ->set('form.codigo_empleado', 'EMP-TEST-1')
+        ->set('form.id_cargo', $cargo->id)
+        ->set('form.id_departamento', $departamento->id)
+        ->set('form.fecha_ingreso', '2026-01-01')
+        ->set('form.sueldo_actual', 6000)
+        ->set('form.id_estado_empleado', $estadoActivo->id)
+        ->call('save')
+        ->assertHasNoErrors();
+
+    expect(\App\Models\Empleado::where('codigo_empleado', 'EMP-TEST-1')->exists())->toBeTrue();
+});
+
 test('admin can access users, roles, permissions modules', function () {
     $admin = User::where('email', 'admin@rrhh.local')->first();
 
