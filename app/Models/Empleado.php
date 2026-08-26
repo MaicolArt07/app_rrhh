@@ -108,4 +108,9 @@ class Empleado extends Model
     {
         return $this->hasMany(AnticipoPrestamo::class, 'id_empleado');
     }
+
+    public function reglamentoLecturas()
+    {
+        return $this->hasMany(ReglamentoLectura::class, 'id_empleado');
+    }
 }

@@ -317,6 +317,36 @@
                 </flux:navlist.item>
                 @endcan
 
+                <!-- ✅ REGLAMENTOS -->
+                @can('Ver Reglamentos')
+                <flux:navlist.item
+                    :href="route('reglamentos')"
+                    :current="request()->routeIs('reglamentos*')"
+                    wire:navigate
+                    class="mt-1 rounded-xl px-3 py-2.5 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                >
+                    <i class="bi bi-journal-text me-2"></i> {{ __('Reglamentos') }}
+                </flux:navlist.item>
+                @endcan
+
+                <!-- ✅ NOTIFICACIONES -->
+                @can('Ver Notificaciones')
+                <flux:navlist.item
+                    :href="route('notificaciones')"
+                    :current="request()->routeIs('notificaciones*')"
+                    wire:navigate
+                    class="mt-1 rounded-xl px-3 py-2.5 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                >
+                    <i class="bi bi-bell-fill me-2"></i> {{ __('Notificaciones') }}
+                    @php
+                        $noLeidas = auth()->user()->notificaciones()->where('leido', false)->count();
+                    @endphp
+                    @if ($noLeidas)
+                        <span class="ml-auto rounded-full bg-red-600 px-2 py-0.5 text-xs font-semibold text-white">{{ $noLeidas }}</span>
+                    @endif
+                </flux:navlist.item>
+                @endcan
+
                 <!-- ✅ CATÁLOGOS DEL SISTEMA -->
                 @canany(['Ver Tipos', 'Ver Gestiones'])
                 <flux:navlist.group :heading="__('Catálogos')" class="grid mt-3">

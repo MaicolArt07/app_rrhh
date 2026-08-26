@@ -18,6 +18,8 @@ use App\Livewire\LivewirePermisosLaborales;
 use App\Livewire\LivewirePermissions;
 use App\Livewire\LivewirePersonas;
 use App\Livewire\LivewirePlanillas;
+use App\Livewire\LivewireNotificaciones;
+use App\Livewire\LivewireReglamentos;
 use App\Livewire\LivewireRoles;
 use App\Livewire\LivewireSaldosVacaciones;
 use App\Livewire\LivewireTipos;
@@ -71,6 +73,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/anticipos', LivewireAnticipos::class)->middleware('can:Ver Anticipos')->name('anticipos');
     Route::get('/liquidaciones', LivewireLiquidaciones::class)->middleware('can:Ver Liquidaciones')->name('liquidaciones');
     Route::get('/evaluaciones', LivewireEvaluaciones::class)->middleware('can:Ver Evaluaciones')->name('evaluaciones');
+    Route::get('/reglamentos', LivewireReglamentos::class)->middleware('can:Ver Reglamentos')->name('reglamentos');
+    Route::get('/notificaciones', LivewireNotificaciones::class)->middleware('can:Ver Notificaciones')->name('notificaciones');
 
     Route::get('settings/profile', Profile::class)->name('settings.profile');
     Route::get('settings/password', Password::class)->name('settings.password');

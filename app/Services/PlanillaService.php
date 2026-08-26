@@ -130,6 +130,14 @@ class PlanillaService
                     'total_pagado' => $detalle->sueldo_liquido,
                 ]);
             }
+
+            app(NotificacionService::class)->notificarUsuariosConPermiso(
+                'Ver Planillas',
+                'planilla_lista',
+                'Planilla pagada',
+                "La planilla del periodo {$planilla->fecha_inicio->format('d/m/Y')} al {$planilla->fecha_fin->format('d/m/Y')} fue marcada como pagada.",
+                $planilla
+            );
         }
 
         return $planilla->fresh();

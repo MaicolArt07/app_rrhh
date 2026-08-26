@@ -81,7 +81,7 @@ class RolesAndPermissionsSeeder extends Seeder
 
         $empleado = Role::firstOrCreate(['name' => 'Empleado']);
         $empleado->syncPermissions([
-            'Ver Inicio', 'Ver Vacaciones', 'Ver Notificaciones', 'Marcar Asistencia',
+            'Ver Inicio', 'Ver Vacaciones', 'Ver Notificaciones', 'Marcar Asistencia', 'Ver Reglamentos',
         ]);
     }
 }

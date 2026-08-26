@@ -6,6 +6,7 @@ use App\Livewire\Form\PermisoLaboralForm;
 use App\Models\Empleado;
 use App\Models\PermisoLaboral;
 use App\Models\Tipo;
+use App\Services\NotificacionService;
 use Carbon\Carbon;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -82,6 +83,15 @@ class LivewirePermisosLaborales extends Component
                 $data['estado_solicitud'] = 'pendiente';
                 $permiso = PermisoLaboral::create($data);
                 $message = 'Permiso solicitado correctamente.';
+
+                $empleadoNombre = $permiso->empleado->persona?->nombreCompleto() ?? $permiso->empleado->codigo_empleado;
+                app(NotificacionService::class)->notificarUsuariosConPermiso(
+                    'Aprobar Permisos Laborales',
+                    'permiso_solicitado',
+                    'Nuevo permiso solicitado',
+                    "{$empleadoNombre} solicitó un permiso del {$permiso->fecha_inicio->format('d/m/Y')} al {$permiso->fecha_fin->format('d/m/Y')}.",
+                    $permiso
+                );
             }
 
             if ($this->documentoSoporte) {
@@ -113,6 +123,17 @@ class LivewirePermisosLaborales extends Component
             $permiso->estado_solicitud = 'aprobado';
             $permiso->id_aprobado_por = auth()->id();
             $permiso->save();
+
+            $usuarioEmpleado = $permiso->empleado->persona?->user;
+            if ($usuarioEmpleado) {
+                app(NotificacionService::class)->crear(
+                    $usuarioEmpleado,
+                    'permiso_aprobado',
+                    'Permiso aprobado',
+                    "Tu permiso del {$permiso->fecha_inicio->format('d/m/Y')} al {$permiso->fecha_fin->format('d/m/Y')} fue aprobado.",
+                    $permiso
+                );
+            }
 
             $this->dispatch('toast', type: 'success', message: 'Permiso aprobado correctamente.');
         } catch (\Throwable $e) {

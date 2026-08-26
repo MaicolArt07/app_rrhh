@@ -498,6 +498,94 @@ test('admin can register a performance evaluation with dynamic criteria', functi
     expect($evaluacion->detalles)->toHaveCount(5);
 });
 
+test('admin can manage reglamentos, track lecturas and receive notifications', function () {
+    $admin = User::where('email', 'admin@rrhh.local')->first();
+
+    $this->actingAs($admin)->get('/reglamentos')->assertOk();
+    $this->actingAs($admin)->get('/notificaciones')->assertOk();
+
+    \Livewire\Livewire::actingAs($admin)
+        ->test(\App\Livewire\LivewireReglamentos::class)
+        ->set('form.titulo', 'Código de Conducta')
+        ->set('form.contenido', 'Contenido de prueba del reglamento.')
+        ->set('form.version', '1.0')
+        ->set('form.vigente_desde', now()->format('Y-m-d'))
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $reglamento = \App\Models\Reglamento::where('titulo', 'Código de Conducta')->first();
+    expect($reglamento)->not->toBeNull();
+
+    $departamento = \App\Models\Departamento::create(['nombre' => 'RRHH', 'estado' => true]);
+    $cargo = \App\Models\Cargo::create(['id_departamento' => $departamento->id, 'nombre' => 'Analista', 'sueldo_base' => 4000, 'estado' => true]);
+    $tipoDocumento = \App\Models\Tipo::where('categoria', 'tipo_documento')->first();
+    $persona = \App\Models\Persona::create([
+        'primer_nombre' => 'Karla', 'primer_apellido' => 'Solís',
+        'id_tipo_documento' => $tipoDocumento->id, 'numero_documento' => '6667778889',
+        'genero' => 'femenino', 'estado' => true,
+    ]);
+    $estadoActivo = \App\Models\Tipo::where('categoria', 'estado_empleado')->where('codigo', 'activo')->first();
+    $empleado = \App\Models\Empleado::create([
+        'id_persona' => $persona->id, 'codigo_empleado' => 'EMP-TEST-9', 'id_cargo' => $cargo->id,
+        'id_departamento' => $departamento->id, 'fecha_ingreso' => '2026-01-01', 'sueldo_actual' => 4000,
+        'id_estado_empleado' => $estadoActivo->id, 'estado' => true,
+    ]);
+
+    \Livewire\Livewire::actingAs($admin)
+        ->test(\App\Livewire\LivewireReglamentos::class)
+        ->call('verLecturas', $reglamento->id)
+        ->call('registrarLectura', $empleado->id);
+
+    expect(\App\Models\ReglamentoLectura::where('id_reglamento', $reglamento->id)->where('id_empleado', $empleado->id)->exists())->toBeTrue();
+
+    // Solicitar un permiso debe notificar a quienes pueden aprobarlo (el admin, vía Super Admin).
+    $tipoPermiso = \App\Models\Tipo::where('categoria', 'tipo_permiso')->first();
+    \Livewire\Livewire::actingAs($admin)
+        ->test(\App\Livewire\LivewirePermisosLaborales::class)
+        ->set('form.id_empleado', $empleado->id)
+        ->set('form.id_tipo_permiso', $tipoPermiso->id)
+        ->set('form.fecha_inicio', now()->addDays(3)->format('Y-m-d'))
+        ->set('form.fecha_fin', now()->addDays(3)->format('Y-m-d'))
+        ->call('save');
+
+    expect(\App\Models\Notificacion::where('id_usuario_destino', $admin->id)
+        ->whereHas('tipoNotificacion', fn ($q) => $q->where('codigo', 'permiso_solicitado'))
+        ->exists())->toBeTrue();
+});
+
+test('rrhh:revisar-vencimientos command notifies about expiring contracts', function () {
+    $admin = User::where('email', 'admin@rrhh.local')->first();
+
+    $departamento = \App\Models\Departamento::create(['nombre' => 'IT', 'estado' => true]);
+    $cargo = \App\Models\Cargo::create(['id_departamento' => $departamento->id, 'nombre' => 'Dev', 'sueldo_base' => 5500, 'estado' => true]);
+    $tipoDocumento = \App\Models\Tipo::where('categoria', 'tipo_documento')->first();
+    $persona = \App\Models\Persona::create([
+        'primer_nombre' => 'Iván', 'primer_apellido' => 'Duarte',
+        'id_tipo_documento' => $tipoDocumento->id, 'numero_documento' => '8889990001',
+        'genero' => 'masculino', 'estado' => true,
+    ]);
+    $estadoActivo = \App\Models\Tipo::where('categoria', 'estado_empleado')->where('codigo', 'activo')->first();
+    $empleado = \App\Models\Empleado::create([
+        'id_persona' => $persona->id, 'codigo_empleado' => 'EMP-TEST-10', 'id_cargo' => $cargo->id,
+        'id_departamento' => $departamento->id, 'fecha_ingreso' => now()->subYear()->format('Y-m-d'),
+        'sueldo_actual' => 5500, 'id_estado_empleado' => $estadoActivo->id, 'estado' => true,
+    ]);
+    $tipoContrato = \App\Models\Tipo::where('categoria', 'tipo_contrato')->first();
+    \App\Models\Contrato::create([
+        'id_empleado' => $empleado->id, 'id_tipo_contrato' => $tipoContrato->id,
+        'fecha_inicio' => now()->subYear()->format('Y-m-d'), 'fecha_fin' => now()->addDays(10)->format('Y-m-d'),
+        'notificado_vencimiento' => false, 'estado' => true,
+    ]);
+
+    $this->artisan('rrhh:revisar-vencimientos')->assertExitCode(0);
+
+    expect(\App\Models\Notificacion::where('id_usuario_destino', $admin->id)
+        ->whereHas('tipoNotificacion', fn ($q) => $q->where('codigo', 'contrato_por_vencer'))
+        ->exists())->toBeTrue();
+
+    expect(\App\Models\Contrato::where('id_empleado', $empleado->id)->first()->notificado_vencimiento)->toBeTrue();
+});
+
 test('admin can access users, roles, permissions modules', function () {
     $admin = User::where('email', 'admin@rrhh.local')->first();
 
