@@ -306,6 +306,70 @@ test('admin can manage saldos de vacaciones and horas extra', function () {
     expect((float) $detalle->monto_calculado)->toBe(50.0);
 });
 
+test('admin can generate a planilla and download a boleta', function () {
+    $admin = User::where('email', 'admin@rrhh.local')->first();
+
+    $this->actingAs($admin)->get('/planillas')->assertOk();
+    $this->actingAs($admin)->get('/conceptos-pago')->assertOk();
+
+    $departamento = \App\Models\Departamento::create(['nombre' => 'Finanzas', 'estado' => true]);
+    $cargo = \App\Models\Cargo::create(['id_departamento' => $departamento->id, 'nombre' => 'Contador', 'sueldo_base' => 5000, 'estado' => true]);
+    $tipoDocumento = \App\Models\Tipo::where('categoria', 'tipo_documento')->first();
+    $persona = \App\Models\Persona::create([
+        'primer_nombre' => 'Sofía', 'primer_apellido' => 'Castillo',
+        'id_tipo_documento' => $tipoDocumento->id, 'numero_documento' => '2223334445',
+        'genero' => 'femenino', 'estado' => true,
+    ]);
+    $estadoActivo = \App\Models\Tipo::where('categoria', 'estado_empleado')->where('codigo', 'activo')->first();
+    $empleado = \App\Models\Empleado::create([
+        'id_persona' => $persona->id, 'codigo_empleado' => 'EMP-TEST-5', 'id_cargo' => $cargo->id,
+        'id_departamento' => $departamento->id, 'fecha_ingreso' => now()->subMonths(2)->format('Y-m-d'),
+        'sueldo_actual' => 5000, 'id_estado_empleado' => $estadoActivo->id, 'estado' => true,
+    ]);
+
+    \App\Models\ConceptoPago::create([
+        'nombre' => 'Bono Incentivo', 'tipo_concepto' => 'ingreso', 'es_fijo' => true,
+        'valor_por_defecto' => 250, 'es_porcentaje' => false, 'estado' => true,
+    ]);
+    \App\Models\ConceptoPago::create([
+        'nombre' => 'IGSS', 'tipo_concepto' => 'deduccion', 'es_fijo' => true,
+        'valor_por_defecto' => 4.83, 'es_porcentaje' => true, 'estado' => true,
+    ]);
+
+    $gestionActual = \App\Models\Gestion::where('anio', now()->year)->first();
+    $tipoPlanilla = \App\Models\Tipo::where('categoria', 'tipo_planilla')->where('codigo', 'mensual')->first();
+
+    $planilla = app(\App\Services\PlanillaService::class)->generar([
+        'id_gestion' => $gestionActual->id,
+        'id_mes' => null,
+        'id_tipo_planilla' => $tipoPlanilla->id,
+        'fecha_inicio' => now()->startOfMonth()->format('Y-m-d'),
+        'fecha_fin' => now()->endOfMonth()->format('Y-m-d'),
+        'id_generado_por' => $admin->id,
+    ]);
+
+    expect($planilla->detalles)->toHaveCount(1);
+    $detalle = $planilla->detalles->first();
+    expect($detalle->id_empleado)->toBe($empleado->id);
+    // 5000 base + 250 bono ingreso = 5250 ingresos; IGSS 4.83% de 5000 = 241.50 deduccion
+    expect((float) $detalle->total_ingresos)->toBe(5250.0);
+    expect((float) $detalle->total_deducciones)->toBe(241.5);
+    expect((float) $detalle->sueldo_liquido)->toBe(5008.5);
+
+    $this->actingAs($admin)
+        ->get(route('planillas.boleta', $detalle->id))
+        ->assertOk()
+        ->assertHeader('content-type', 'application/pdf');
+
+    \Livewire\Livewire::actingAs($admin)
+        ->test(\App\Livewire\LivewirePlanillas::class)
+        ->call('avanzarEstado', $planilla->id, 'revisada')
+        ->call('avanzarEstado', $planilla->id, 'aprobada')
+        ->call('avanzarEstado', $planilla->id, 'pagada');
+
+    expect($detalle->fresh()->estado_pago)->toBe('pagado');
+});
+
 test('admin can access users, roles, permissions modules', function () {
     $admin = User::where('email', 'admin@rrhh.local')->first();
 

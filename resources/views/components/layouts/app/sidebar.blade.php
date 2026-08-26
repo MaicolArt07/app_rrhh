@@ -245,6 +245,43 @@
                 </flux:navlist.group>
                 @endcanany
 
+                <!-- ✅ PLANILLAS -->
+                @can('Ver Planillas')
+                <flux:navlist.group :heading="__('Planillas')" class="grid mt-3">
+                    @php
+                        $isPayrollSection = request()->routeIs('planillas*') || request()->routeIs('conceptos-pago*');
+                    @endphp
+
+                    <details class="group" @if($isPayrollSection) open @endif>
+                        <summary class="flex items-center cursor-pointer rounded-xl px-3 py-2.5 transition hover:bg-zinc-200 dark:hover:bg-zinc-800 {{ $isPayrollSection ? 'bg-zinc-200 font-semibold text-zinc-900 dark:bg-zinc-800 dark:text-white' : 'text-zinc-700 dark:text-zinc-200' }}">
+                            <i class="bi bi-cash-stack me-2"></i>
+                            <span>{{ __('Planillas') }}</span>
+                            <i class="bi bi-chevron-down ms-auto transition-transform duration-200 group-open:rotate-180"></i>
+                        </summary>
+
+                        <div class="ml-5 mt-2 space-y-1 border-l border-zinc-200 pl-3 dark:border-zinc-700">
+                            <flux:navlist.item
+                                :href="route('planillas')"
+                                :current="request()->routeIs('planillas*')"
+                                wire:navigate
+                                class="{{ request()->routeIs('planillas*') ? 'bg-zinc-200 dark:bg-zinc-800 font-semibold rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
+                            >
+                                <i class="bi bi-receipt me-2"></i> {{ __('Planillas') }}
+                            </flux:navlist.item>
+
+                            <flux:navlist.item
+                                :href="route('conceptos-pago')"
+                                :current="request()->routeIs('conceptos-pago*')"
+                                wire:navigate
+                                class="{{ request()->routeIs('conceptos-pago*') ? 'bg-zinc-200 dark:bg-zinc-800 font-semibold rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
+                            >
+                                <i class="bi bi-list-check me-2"></i> {{ __('Conceptos de Pago') }}
+                            </flux:navlist.item>
+                        </div>
+                    </details>
+                </flux:navlist.group>
+                @endcan
+
                 <!-- ✅ CATÁLOGOS DEL SISTEMA -->
                 @canany(['Ver Tipos', 'Ver Gestiones'])
                 <flux:navlist.group :heading="__('Catálogos')" class="grid mt-3">
