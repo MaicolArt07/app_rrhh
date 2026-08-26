@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+    <head>
+        @vite(['resources/css/app.css', 'resources/js/app.js'])
+        <script>
+            function themeHandler() {
+                return {
+                    theme: localStorage.getItem('theme') || 'light',
+
+                    init() {
+                        this.theme = localStorage.getItem('theme') || 'light';
+                        this.apply();
+
+                        document.addEventListener('livewire:navigated', () => {
+                            this.theme = localStorage.getItem('theme') || 'light';
+                            this.apply();
+                        });
+                    },
+
+                    apply() {
+                        document.documentElement.classList.toggle('dark', this.theme === 'dark');
+                    },
+
+                    toggle() {
+                        this.theme = this.theme === 'dark' ? 'light' : 'dark';
+                        localStorage.setItem('theme', this.theme);
+                        this.apply();
+                    }
+                }
+            }
+        </script>
+
+        @include('partials.head')
+    </head>
+
+    <body
+        x-data="themeHandler()"
+        x-init="init()"
+        class="min-h-screen bg-zinc-100 text-zinc-800 transition-colors duration-300 dark:bg-zinc-950 dark:text-zinc-100"
+    >
+        <flux:sidebar
+            sticky
+            stashable
+            class="border-e border-zinc-200 bg-zinc-50 px-3 py-3 dark:border-zinc-800 dark:bg-zinc-900"
+        >
+            <flux:sidebar.toggle
+                class="lg:hidden rounded-lg p-2 text-zinc-600 hover:bg-zinc-200 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                icon="x-mark"
+            />
+
+            <a
+                href="{{ route('home') }}"
+                class="me-5 flex items-center space-x-2 rounded-xl px-2 py-2 transition hover:bg-zinc-100 dark:hover:bg-zinc-800 rtl:space-x-reverse"
+                wire:navigate
+            >
+                <x-app-logo />
+            </a>
+
+            <div class="mt-4 mx-2 rounded-xl border border-yellow-300 bg-yellow-100 p-3 text-sm font-medium text-yellow-800 dark:border-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-200">
+                <div class="flex items-center space-x-2">
+                    <i class="bi bi-check-circle-fill"></i>
+                    <span>Sistema de Desarrollo</span>
+                </div>
+            </div>
+
+            <!-- ✅ MENÚ PRINCIPAL -->
+            <flux:navlist variant="outline" class="mt-4">
+                <flux:navlist.group :heading="__('Menú Principal')" class="grid gap-1">
+                    @can('Ver Inicio')
+                    <flux:navlist.item
+                        :href="route('home')"
+                        :current="request()->routeIs('home')"
+                        wire:navigate
+                        class="rounded-xl px-3 py-2.5 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                    >
+                        <i class="bi bi-house-door-fill me-2"></i> {{ __('Inicio') }}
+                    </flux:navlist.item>
+                    @endcan
+
+                </flux:navlist.group>
+
+                <!-- ✅ GESTIÓN DE PERSONAL -->
+                @can('Ver Gestion de Personal')
+                <flux:navlist.group :heading="__('Gestión de Personal')" class="grid mt-3">
+                    @php
+                        $isStaffSection =
+                            request()->routeIs('person*') ||
+                            request()->routeIs('employee*') ||
+                            request()->routeIs('employee-position*');
+                    @endphp
+
+                    <details class="group" @if($isStaffSection) open @endif>
+                        <summary class="flex items-center cursor-pointer rounded-xl px-3 py-2.5 transition hover:bg-zinc-200 dark:hover:bg-zinc-800 {{ $isStaffSection ? 'bg-zinc-200 font-semibold text-zinc-900 dark:bg-zinc-800 dark:text-white' : 'text-zinc-700 dark:text-zinc-200' }}">
+                            <i class="bi bi-person-vcard-fill me-2"></i>
+                            <span>{{ __('Gestión de Personal') }}</span>
+                            <i class="bi bi-chevron-down ms-auto transition-transform duration-200 group-open:rotate-180"></i>
+                        </summary>
+
+                        <div class="ml-5 mt-2 space-y-1 border-l border-zinc-200 pl-3 dark:border-zinc-700">
+                            @can('Ver Persona')
+                            <flux:navlist.item
+                                :href="route('person')"
+                                :current="request()->routeIs('person*')"
+                                wire:navigate
+                                class="{{ request()->routeIs('person*') ? 'bg-zinc-200 dark:bg-zinc-800 font-semibold rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
+                            >
+                                <i class="bi bi-person-badge-fill me-2"></i> {{ __('Personas') }}
+                            </flux:navlist.item>
+                            @endcan
+
+                        </div>
+                    </details>
+                </flux:navlist.group>
+                @endcan
+
+
+                <!-- ✅ GESTIÓN DE USUARIOS -->
+                @can('Ver Gestion de Usuarios')
+                <flux:navlist.group :heading="__('Gestión de Usuarios')" class="grid mt-3">
+                    @php
+                        $isUserSection = request()->routeIs('users*') || request()->routeIs('roles*') || request()->routeIs('permissions*');
+                    @endphp
+
+                    <details class="group" @if($isUserSection) open @endif>
+                        <summary class="flex items-center cursor-pointer rounded-xl px-3 py-2.5 transition hover:bg-zinc-200 dark:hover:bg-zinc-800 {{ $isUserSection ? 'bg-zinc-200 font-semibold text-zinc-900 dark:bg-zinc-800 dark:text-white' : 'text-zinc-700 dark:text-zinc-200' }}">
+                            <i class="bi bi-people-fill me-2"></i>
+                            <span>{{ __('Usuarios') }}</span>
+                            <i class="bi bi-chevron-down ms-auto transition-transform duration-200 group-open:rotate-180"></i>
+                        </summary>
+
+                        <div class="ml-5 mt-2 space-y-1 border-l border-zinc-200 pl-3 dark:border-zinc-700">
+                            @can('Ver Usuarios')
+                            <flux:navlist.item
+                                :href="route('users')"
+                                :current="request()->routeIs('users*')"
+                                wire:navigate
+                                class="{{ request()->routeIs('users*') ? 'bg-zinc-200 dark:bg-zinc-800 font-semibold rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
+                            >
+                                <i class="bi bi-person-lines-fill me-2"></i> {{ __('Lista de Usuarios') }}
+                            </flux:navlist.item>
+                            @endcan
+
+                            @can('Ver Roles')
+                            <flux:navlist.item
+                                :href="route('roles')"
+                                :current="request()->routeIs('roles*')"
+                                wire:navigate
+                                class="{{ request()->routeIs('roles*') ? 'bg-zinc-200 dark:bg-zinc-800 font-semibold rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
+                            >
+                                <i class="bi bi-person-gear me-2"></i> {{ __('Roles') }}
+                            </flux:navlist.item>
+                            @endcan
+
+                            @can('Ver Permisos')
+                            <flux:navlist.item
+                                :href="route('permissions')"
+                                :current="request()->routeIs('permissions*')"
+                                wire:navigate
+                                class="{{ request()->routeIs('permissions*') ? 'bg-zinc-200 dark:bg-zinc-800 font-semibold rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
+                            >
+                                <i class="bi bi-shield-lock-fill me-2"></i> {{ __('Permisos') }}
+                            </flux:navlist.item>
+                            @endcan
+                        </div>
+                    </details>
+                </flux:navlist.group>
+                @endcan
+            </flux:navlist>
+
+            <flux:spacer />
+
+            <!-- ✅ MENÚ DE USUARIO (Desktop) -->
+            <flux:dropdown class="hidden lg:block" position="bottom" align="start">
+                <flux:profile
+                    :name="auth()->user()->name"
+                    :initials="auth()->user()->initials()"
+                    icon:trailing="chevrons-up-down"
+                />
+
+                <flux:menu class="w-[220px] dark:bg-zinc-900 dark:text-zinc-100">
+                    <flux:menu.radio.group>
+                        <div class="p-0 text-sm font-normal">
+                            <div class="flex items-center gap-2 px-1 py-1.5 text-start text-sm">
+                                <span class="relative flex h-8 w-8 shrink-0 overflow-hidden rounded-lg">
+                                    <span class="flex h-full w-full items-center justify-center rounded-lg bg-neutral-200 text-black dark:bg-zinc-700 dark:text-white">
+                                        {{ auth()->user()->initials() }}
+                                    </span>
+                                </span>
+
+                                <div class="grid flex-1 text-start text-sm leading-tight">
+                                    <span class="truncate font-semibold">{{ auth()->user()->name }}</span>
+                                    <span class="truncate text-xs text-zinc-500 dark:text-zinc-400">{{ auth()->user()->email }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </flux:menu.radio.group>
+
+                    <flux:menu.separator />
+
+                    <flux:menu.radio.group>
+                        <flux:menu.item :href="route('settings.profile')" icon="cog" wire:navigate>
+                            {{ __('Opciones') }}
+                        </flux:menu.item>
+                    </flux:menu.radio.group>
+
+                    <flux:menu.separator />
+
+                    <form method="POST" action="{{ route('logout') }}" class="w-full">
+                        @csrf
+                        <flux:menu.item as="button" type="submit" icon="arrow-right-start-on-rectangle" class="w-full">
+                            {{ __('Cerrar Sesión') }}
+                        </flux:menu.item>
+                    </form>
+                </flux:menu>
+            </flux:dropdown>
+
+            <!-- BOTÓN TEMA DESKTOP -->
+            <div class="mt-3 hidden lg:flex justify-center px-2">
+                <button
+                    type="button"
+                    @click="toggle()"
+                    class="w-full inline-flex items-center justify-center gap-2 rounded-xl border border-zinc-300 bg-white px-4 py-3 text-sm font-medium text-zinc-800 shadow-sm transition hover:bg-zinc-100 dark:border-zinc-600 dark:bg-zinc-800 dark:text-white dark:hover:bg-zinc-700"
+                >
+                    <i class="bi bi-moon-stars-fill dark:hidden text-zinc-700"></i>
+                    <i class="bi bi-sun-fill hidden dark:inline text-yellow-400"></i>
+                    <span class="hidden dark:inline text-white" >Modo oscuro</span>
+                    <span class="dark:hidden">Modo claro</span>
+                </button>
+            </div>
+        </flux:sidebar>
+
+        <!-- ✅ MENÚ MÓVIL -->
+        <flux:header class="border-b border-zinc-200 bg-white px-3 py-2 dark:border-zinc-800 dark:bg-zinc-900 lg:hidden">
+            <flux:sidebar.toggle class="lg:hidden" icon="bars-2" inset="left" />
+
+            <flux:spacer />
+
+            <div class="flex items-center gap-2">
+                <button
+                    type="button"
+                    @click="toggle()"
+                    class="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-700 shadow-sm transition hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700"
+                >
+                    <i class="bi bi-moon-stars-fill dark:hidden"></i>
+                    <i class="bi bi-sun-fill hidden dark:inline"></i>
+                </button>
+
+                <flux:dropdown position="top" align="end">
+                    <flux:profile
+                        :initials="auth()->user()->initials()"
+                        icon-trailing="chevron-down"
+                    />
+
+                    <flux:menu class="dark:bg-zinc-900 dark:text-zinc-100">
+                        <flux:menu.radio.group>
+                            <div class="p-0 text-sm font-normal">
+                                <div class="flex items-center gap-2 px-1 py-1.5 text-start text-sm">
+                                    <span class="relative flex h-8 w-8 shrink-0 overflow-hidden rounded-lg">
+                                        <span class="flex h-full w-full items-center justify-center rounded-lg bg-neutral-200 text-black dark:bg-zinc-700 dark:text-white">
+                                            {{ auth()->user()->initials() }}
+                                        </span>
+                                    </span>
+
+                                    <div class="grid flex-1 text-start text-sm leading-tight">
+                                        <span class="truncate font-semibold">{{ auth()->user()->name }}</span>
+                                        <span class="truncate text-xs text-zinc-500 dark:text-zinc-400">{{ auth()->user()->email }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </flux:menu.radio.group>
+
+                        <flux:menu.separator />
+
+                        <flux:menu.radio.group>
+                            <flux:menu.item :href="route('settings.profile')" icon="cog" wire:navigate>
+                                {{ __('Opciones') }}
+                            </flux:menu.item>
+                        </flux:menu.radio.group>
+
+                        <flux:menu.separator />
+
+                        <form method="POST" action="{{ route('logout') }}" class="w-full">
+                            @csrf
+                            <flux:menu.item as="button" type="submit" icon="arrow-right-start-on-rectangle" class="w-full">
+                                {{ __('Cerrar Sesión') }}
+                            </flux:menu.item>
+                        </form>
+                    </flux:menu>
+                </flux:dropdown>
+            </div>
+        </flux:header>
+
+        {{ $slot }}
+
+        @fluxScripts
+
+         <!-- <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> -->
+
+<!-- <script>
+document.addEventListener('livewire:init', () => {
+
+    const Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 2500,
+        timerProgressBar: true
+    });
+
+    Livewire.on('pdf-downloading', () => {
+        Toast.fire({
+            icon: 'info',
+            title: 'Descargando PDF...'
+        });
+    });
+
+    Livewire.on('pdf-downloaded', () => {
+        Toast.fire({
+            icon: 'success',
+            title: 'PDF descargado correctamente'
+        });
+    });
+
+});
+</script> -->
+    </body>
+</html>
