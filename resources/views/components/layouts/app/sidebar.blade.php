@@ -79,43 +79,50 @@
 
                 </flux:navlist.group>
 
-                <!-- ✅ GESTIÓN DE PERSONAL -->
-                @can('Ver Gestion de Personal')
-                <flux:navlist.group :heading="__('Gestión de Personal')" class="grid mt-3">
+                <!-- ✅ CATÁLOGOS DEL SISTEMA -->
+                @canany(['Ver Tipos', 'Ver Gestiones'])
+                <flux:navlist.group :heading="__('Catálogos')" class="grid mt-3">
                     @php
-                        $isStaffSection =
-                            request()->routeIs('person*') ||
-                            request()->routeIs('employee*') ||
-                            request()->routeIs('employee-position*');
+                        $isCatalogSection = request()->routeIs('tipos*') || request()->routeIs('gestiones*');
                     @endphp
 
-                    <details class="group" @if($isStaffSection) open @endif>
-                        <summary class="flex items-center cursor-pointer rounded-xl px-3 py-2.5 transition hover:bg-zinc-200 dark:hover:bg-zinc-800 {{ $isStaffSection ? 'bg-zinc-200 font-semibold text-zinc-900 dark:bg-zinc-800 dark:text-white' : 'text-zinc-700 dark:text-zinc-200' }}">
-                            <i class="bi bi-person-vcard-fill me-2"></i>
-                            <span>{{ __('Gestión de Personal') }}</span>
+                    <details class="group" @if($isCatalogSection) open @endif>
+                        <summary class="flex items-center cursor-pointer rounded-xl px-3 py-2.5 transition hover:bg-zinc-200 dark:hover:bg-zinc-800 {{ $isCatalogSection ? 'bg-zinc-200 font-semibold text-zinc-900 dark:bg-zinc-800 dark:text-white' : 'text-zinc-700 dark:text-zinc-200' }}">
+                            <i class="bi bi-collection-fill me-2"></i>
+                            <span>{{ __('Catálogos') }}</span>
                             <i class="bi bi-chevron-down ms-auto transition-transform duration-200 group-open:rotate-180"></i>
                         </summary>
 
                         <div class="ml-5 mt-2 space-y-1 border-l border-zinc-200 pl-3 dark:border-zinc-700">
-                            @can('Ver Persona')
+                            @can('Ver Tipos')
                             <flux:navlist.item
-                                :href="route('person')"
-                                :current="request()->routeIs('person*')"
+                                :href="route('tipos')"
+                                :current="request()->routeIs('tipos*')"
                                 wire:navigate
-                                class="{{ request()->routeIs('person*') ? 'bg-zinc-200 dark:bg-zinc-800 font-semibold rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
+                                class="{{ request()->routeIs('tipos*') ? 'bg-zinc-200 dark:bg-zinc-800 font-semibold rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
                             >
-                                <i class="bi bi-person-badge-fill me-2"></i> {{ __('Personas') }}
+                                <i class="bi bi-tags-fill me-2"></i> {{ __('Tipos') }}
                             </flux:navlist.item>
                             @endcan
 
+                            @can('Ver Gestiones')
+                            <flux:navlist.item
+                                :href="route('gestiones')"
+                                :current="request()->routeIs('gestiones*')"
+                                wire:navigate
+                                class="{{ request()->routeIs('gestiones*') ? 'bg-zinc-200 dark:bg-zinc-800 font-semibold rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
+                            >
+                                <i class="bi bi-calendar-range-fill me-2"></i> {{ __('Gestiones y Meses') }}
+                            </flux:navlist.item>
+                            @endcan
                         </div>
                     </details>
                 </flux:navlist.group>
-                @endcan
+                @endcanany
 
 
                 <!-- ✅ GESTIÓN DE USUARIOS -->
-                @can('Ver Gestion de Usuarios')
+                @canany(['Ver Usuarios', 'Ver Roles', 'Ver Permisos'])
                 <flux:navlist.group :heading="__('Gestión de Usuarios')" class="grid mt-3">
                     @php
                         $isUserSection = request()->routeIs('users*') || request()->routeIs('roles*') || request()->routeIs('permissions*');
@@ -164,7 +171,7 @@
                         </div>
                     </details>
                 </flux:navlist.group>
-                @endcan
+                @endcanany
             </flux:navlist>
 
             <flux:spacer />
@@ -293,35 +300,5 @@
         {{ $slot }}
 
         @fluxScripts
-
-         <!-- <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> -->
-
-<!-- <script>
-document.addEventListener('livewire:init', () => {
-
-    const Toast = Swal.mixin({
-        toast: true,
-        position: 'top-end',
-        showConfirmButton: false,
-        timer: 2500,
-        timerProgressBar: true
-    });
-
-    Livewire.on('pdf-downloading', () => {
-        Toast.fire({
-            icon: 'info',
-            title: 'Descargando PDF...'
-        });
-    });
-
-    Livewire.on('pdf-downloaded', () => {
-        Toast.fire({
-            icon: 'success',
-            title: 'PDF descargado correctamente'
-        });
-    });
-
-});
-</script> -->
     </body>
 </html>

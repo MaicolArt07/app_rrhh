@@ -1,9 +1,10 @@
 <?php
 
+use App\Livewire\LivewireGestiones;
 use App\Livewire\LivewireHome;
 use App\Livewire\LivewirePermissions;
-use App\Livewire\LivewirePerson;
 use App\Livewire\LivewireRoles;
+use App\Livewire\LivewireTipos;
 use App\Livewire\LivewireUsers;
 use App\Livewire\Settings\Appearance;
 use App\Livewire\Settings\Password;
@@ -32,7 +33,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/users', LivewireUsers::class)->middleware('can:Ver Usuarios')->name('users');
     Route::get('/roles', LivewireRoles::class)->middleware('can:Ver Roles')->name('roles');
     Route::get('/permissions', LivewirePermissions::class)->middleware('can:Ver Permisos')->name('permissions');
-    Route::get('/person', LivewirePerson::class)->middleware('can:Ver Persona')->name('person');
+    Route::get('/tipos', LivewireTipos::class)->middleware('can:Ver Tipos')->name('tipos');
+    Route::get('/gestiones', LivewireGestiones::class)->middleware('can:Ver Gestiones')->name('gestiones');
 
     Route::get('settings/profile', Profile::class)->name('settings.profile');
     Route::get('settings/password', Password::class)->name('settings.password');
