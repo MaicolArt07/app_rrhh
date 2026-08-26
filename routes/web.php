@@ -12,6 +12,7 @@ use App\Livewire\LivewireConceptosPago;
 use App\Livewire\LivewireGestiones;
 use App\Livewire\LivewireHome;
 use App\Livewire\LivewireHorasExtra;
+use App\Livewire\LivewireLiquidaciones;
 use App\Livewire\LivewirePermisosLaborales;
 use App\Livewire\LivewirePermissions;
 use App\Livewire\LivewirePersonas;
@@ -67,6 +68,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/planillas', LivewirePlanillas::class)->middleware('can:Ver Planillas')->name('planillas');
     Route::get('/planillas/boleta/{detalle}', [BoletaController::class, 'download'])->middleware('can:Ver Planillas')->name('planillas.boleta');
     Route::get('/anticipos', LivewireAnticipos::class)->middleware('can:Ver Anticipos')->name('anticipos');
+    Route::get('/liquidaciones', LivewireLiquidaciones::class)->middleware('can:Ver Liquidaciones')->name('liquidaciones');
 
     Route::get('settings/profile', Profile::class)->name('settings.profile');
     Route::get('settings/password', Password::class)->name('settings.password');

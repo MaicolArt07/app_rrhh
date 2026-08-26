@@ -417,6 +417,44 @@ test('admin can manage anticipos and register payments', function () {
     expect($anticipo->fresh()->estado_anticipo)->toBe('pagado');
 });
 
+test('admin can calculate and register a liquidacion', function () {
+    $admin = User::where('email', 'admin@rrhh.local')->first();
+
+    $this->actingAs($admin)->get('/liquidaciones')->assertOk();
+
+    $departamento = \App\Models\Departamento::create(['nombre' => 'Legal', 'estado' => true]);
+    $cargo = \App\Models\Cargo::create(['id_departamento' => $departamento->id, 'nombre' => 'Asistente Legal', 'sueldo_base' => 6000, 'estado' => true]);
+    $tipoDocumento = \App\Models\Tipo::where('categoria', 'tipo_documento')->first();
+    $persona = \App\Models\Persona::create([
+        'primer_nombre' => 'Elena', 'primer_apellido' => 'Vargas',
+        'id_tipo_documento' => $tipoDocumento->id, 'numero_documento' => '4445556667',
+        'genero' => 'femenino', 'estado' => true,
+    ]);
+    $estadoActivo = \App\Models\Tipo::where('categoria', 'estado_empleado')->where('codigo', 'activo')->first();
+    $empleado = \App\Models\Empleado::create([
+        'id_persona' => $persona->id, 'codigo_empleado' => 'EMP-TEST-7', 'id_cargo' => $cargo->id,
+        'id_departamento' => $departamento->id, 'fecha_ingreso' => now()->subYears(2)->format('Y-m-d'),
+        'sueldo_actual' => 6000, 'id_estado_empleado' => $estadoActivo->id, 'estado' => true,
+    ]);
+    $tipoLiquidacion = \App\Models\Tipo::where('categoria', 'tipo_liquidacion')->first();
+
+    $component = \Livewire\Livewire::actingAs($admin)
+        ->test(\App\Livewire\LivewireLiquidaciones::class)
+        ->set('form.id_empleado', $empleado->id)
+        ->set('form.id_tipo_liquidacion', $tipoLiquidacion->id)
+        ->set('form.fecha_liquidacion', now()->format('Y-m-d'))
+        ->call('calcular');
+
+    expect((float) $component->get('form.tiempo_laborado_anios'))->toBeGreaterThan(1.9);
+    expect((float) $component->get('form.monto_indemnizacion'))->toBeGreaterThan(0);
+
+    $component->call('save')->assertHasNoErrors();
+
+    $liquidacion = \App\Models\Liquidacion::where('id_empleado', $empleado->id)->first();
+    expect($liquidacion)->not->toBeNull();
+    expect((float) $liquidacion->total_liquidacion)->toBeGreaterThan(0);
+});
+
 test('admin can access users, roles, permissions modules', function () {
     $admin = User::where('email', 'admin@rrhh.local')->first();
 

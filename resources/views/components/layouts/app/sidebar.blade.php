@@ -246,11 +246,11 @@
                 @endcanany
 
                 <!-- ✅ PLANILLAS -->
-                @canany(['Ver Planillas', 'Ver Anticipos'])
+                @canany(['Ver Planillas', 'Ver Anticipos', 'Ver Liquidaciones'])
                 <flux:navlist.group :heading="__('Planillas')" class="grid mt-3">
                     @php
                         $isPayrollSection = request()->routeIs('planillas*') || request()->routeIs('conceptos-pago*')
-                            || request()->routeIs('anticipos*');
+                            || request()->routeIs('anticipos*') || request()->routeIs('liquidaciones*');
                     @endphp
 
                     <details class="group" @if($isPayrollSection) open @endif>
@@ -287,6 +287,17 @@
                                 class="{{ request()->routeIs('anticipos*') ? 'bg-zinc-200 dark:bg-zinc-800 font-semibold rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
                             >
                                 <i class="bi bi-piggy-bank-fill me-2"></i> {{ __('Anticipos y Préstamos') }}
+                            </flux:navlist.item>
+                            @endcan
+
+                            @can('Ver Liquidaciones')
+                            <flux:navlist.item
+                                :href="route('liquidaciones')"
+                                :current="request()->routeIs('liquidaciones*')"
+                                wire:navigate
+                                class="{{ request()->routeIs('liquidaciones*') ? 'bg-zinc-200 dark:bg-zinc-800 font-semibold rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
+                            >
+                                <i class="bi bi-door-open-fill me-2"></i> {{ __('Liquidaciones') }}
                             </flux:navlist.item>
                             @endcan
                         </div>
