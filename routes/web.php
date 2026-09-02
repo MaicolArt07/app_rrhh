@@ -45,13 +45,6 @@ Route::get('/', LivewireHome::class)
 Route::middleware(['auth'])->group(function () {
     Route::redirect('settings', 'settings/profile');
 
-    // Route::get('/', function () {
-    //     return view('dashboard');
-    // })->name('home');
-
-    Route::get('/', LivewireHome::class)->middleware('can:Ver Inicio')->name('home');
-
-
     Route::get('/users', LivewireUsers::class)->middleware('can:Ver Usuarios')->name('users');
     Route::get('/roles', LivewireRoles::class)->middleware('can:Ver Roles')->name('roles');
     Route::get('/permissions', LivewirePermissions::class)->middleware('can:Ver Permisos')->name('permissions');

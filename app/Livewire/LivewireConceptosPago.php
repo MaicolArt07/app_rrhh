@@ -13,6 +13,7 @@ class LivewireConceptosPago extends Component
 
     public ConceptoPagoForm $form;
 
+    public string $search = '';
     public $modalVisible = false;
 
     protected $paginationTheme = 'tailwind';
@@ -22,10 +23,21 @@ class LivewireConceptosPago extends Component
         $this->form->resetForm();
     }
 
+    public function updatingSearch()
+    {
+        $this->resetPage();
+    }
+
     public function render()
     {
+        $query = ConceptoPago::query();
+
+        if (!empty($this->search)) {
+            $query->where('nombre', 'like', "%{$this->search}%");
+        }
+
         return view('livewire.conceptos-pago.index', [
-            'conceptos' => ConceptoPago::orderBy('tipo_concepto')->orderBy('nombre')->paginate(10),
+            'conceptos' => $query->orderBy('tipo_concepto')->orderBy('nombre')->paginate(10),
         ]);
     }
 

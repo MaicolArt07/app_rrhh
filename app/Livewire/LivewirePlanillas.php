@@ -23,13 +23,29 @@ class LivewirePlanillas extends Component
     public $fecha_inicio = '';
     public $fecha_fin = '';
 
+    public string $search = '';
+
     protected $paginationTheme = 'tailwind';
+
+    public function updatingSearch()
+    {
+        $this->resetPage();
+    }
 
     public function render()
     {
+        $query = Planilla::with(['gestion', 'mes', 'tipoPlanilla', 'estadoPlanilla', 'generadoPor']);
+
+        if (!empty($this->search)) {
+            $query->where(function ($q) {
+                $q->whereHas('gestion', fn ($g) => $g->where('anio', 'like', "%{$this->search}%"))
+                    ->orWhereHas('mes', fn ($m) => $m->where('nombre', 'like', "%{$this->search}%"))
+                    ->orWhereHas('tipoPlanilla', fn ($t) => $t->where('nombre', 'like', "%{$this->search}%"));
+            });
+        }
+
         return view('livewire.planillas.index', [
-            'planillas' => Planilla::with(['gestion', 'mes', 'tipoPlanilla', 'estadoPlanilla', 'generadoPor'])
-                ->orderByDesc('id')->paginate(10),
+            'planillas' => $query->orderByDesc('id')->paginate(10),
             'gestiones' => Gestion::orderByDesc('anio')->get(),
             'meses' => Mes::orderBy('numero')->get(),
             'tiposPlanilla' => Tipo::categoria('tipo_planilla')->activos()->orderBy('orden')->get(),

@@ -16,6 +16,7 @@ class LivewireAnticipos extends Component
     public AnticipoPrestamoForm $form;
 
     public $estadoFiltro = 'activo';
+    public string $search = '';
     public $modalVisible = false;
 
     public $pagoVisible = false;
@@ -34,12 +35,27 @@ class LivewireAnticipos extends Component
         $this->resetPage();
     }
 
+    public function updatingSearch()
+    {
+        $this->resetPage();
+    }
+
     public function render()
     {
         $query = AnticipoPrestamo::query()->with(['empleado.persona', 'tipoAnticipo']);
 
         if (!empty($this->estadoFiltro)) {
             $query->where('estado_anticipo', $this->estadoFiltro);
+        }
+
+        if (!empty($this->search)) {
+            $query->whereHas('empleado', function ($q) {
+                $q->where('codigo_empleado', 'like', "%{$this->search}%")
+                    ->orWhereHas('persona', function ($p) {
+                        $p->where('nombres', 'like', "%{$this->search}%")
+                            ->orWhere('apellidos', 'like', "%{$this->search}%");
+                    });
+            });
         }
 
         return view('livewire.anticipos.index', [

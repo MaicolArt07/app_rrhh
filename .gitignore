@@ -21,3 +21,7 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
+
+# Backups / dumps locales (no deben ir al repo)
+/app_rrhh.zip
+/bd_rrhh_app.sql

@@ -15,6 +15,7 @@ class LivewireFeriados extends Component
     public FeriadoForm $form;
 
     public $gestionFiltro = '';
+    public string $search = '';
     public $modalVisible = false;
 
     protected $paginationTheme = 'tailwind';
@@ -30,12 +31,21 @@ class LivewireFeriados extends Component
         $this->resetPage();
     }
 
+    public function updatingSearch()
+    {
+        $this->resetPage();
+    }
+
     public function render()
     {
         $query = Feriado::query()->with('gestion');
 
         if (!empty($this->gestionFiltro)) {
             $query->where('id_gestion', $this->gestionFiltro);
+        }
+
+        if (!empty($this->search)) {
+            $query->where('descripcion', 'like', "%{$this->search}%");
         }
 
         return view('livewire.feriados.index', [

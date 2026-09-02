@@ -13,6 +13,7 @@ class LivewireTurnos extends Component
 
     public TurnoForm $form;
 
+    public string $search = '';
     public $modalVisible = false;
 
     protected $paginationTheme = 'tailwind';
@@ -22,10 +23,21 @@ class LivewireTurnos extends Component
         $this->form->resetForm();
     }
 
+    public function updatingSearch()
+    {
+        $this->resetPage();
+    }
+
     public function render()
     {
+        $query = Turno::query();
+
+        if (!empty($this->search)) {
+            $query->where('nombre', 'like', "%{$this->search}%");
+        }
+
         return view('livewire.turnos.index', [
-            'turnos' => Turno::orderBy('nombre')->paginate(10),
+            'turnos' => $query->orderBy('nombre')->paginate(10),
         ]);
     }
 

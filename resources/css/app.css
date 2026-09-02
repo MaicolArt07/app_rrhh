@@ -10,7 +10,7 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans: 'Poppins', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
 
     --color-zinc-50: #fafafa;
     --color-zinc-100: #f5f5f5;
@@ -24,16 +24,25 @@
     --color-zinc-900: #171717;
     --color-zinc-950: #0a0a0a;
 
-    --color-accent: var(--color-neutral-800);
-    --color-accent-content: var(--color-neutral-800);
-    --color-accent-foreground: var(--color-white);
+    /* Colores corporativos DeltaX (Manual de Marca 2024) */
+    --color-deltax-orange: #ec9405;
+    --color-deltax-gray: #d9d9d9;
+    --color-deltax-white: #ffffff;
+
+    --color-primary: var(--color-deltax-orange);
+    --color-primary-content: var(--color-deltax-orange);
+    --color-primary-foreground: var(--color-deltax-white);
+
+    --color-accent: var(--color-deltax-orange);
+    --color-accent-content: var(--color-deltax-orange);
+    --color-accent-foreground: var(--color-deltax-white);
 }
 
 @layer theme {
     .dark {
-        --color-accent: var(--color-white);
-        --color-accent-content: var(--color-white);
-        --color-accent-foreground: var(--color-neutral-800);
+        --color-accent: var(--color-deltax-orange);
+        --color-accent-content: var(--color-deltax-orange);
+        --color-accent-foreground: var(--color-deltax-white);
     }
 }
 
@@ -60,6 +69,111 @@ input:focus[data-flux-control],
 textarea:focus[data-flux-control],
 select:focus[data-flux-control] {
     @apply outline-hidden ring-2 ring-accent ring-offset-2 ring-offset-accent-foreground;
+}
+
+[x-cloak] {
+    display: none !important;
+}
+
+/* Sidebar colapsable: iconos únicamente, se expande al pasar el cursor */
+@media (min-width: 64rem) {
+    [data-sidebar-collapsed="true"] .sidebar-label,
+    [data-sidebar-collapsed="true"] [data-content],
+    [data-sidebar-collapsed="true"] .sidebar-logo-full,
+    [data-sidebar-collapsed="true"] [data-flux-navlist] > div > div:first-child,
+    [data-sidebar-collapsed="true"] [data-flux-profile] > span,
+    [data-sidebar-collapsed="true"] [data-flux-profile] .ms-auto {
+        display: none !important;
+    }
+
+    [data-sidebar-collapsed="true"] .sidebar-logo-mark {
+        display: block !important;
+    }
+
+    [data-sidebar-collapsed="true"] [data-flux-navlist-item] {
+        justify-content: center;
+    }
+}
+
+/* Sidebar con fondo naranja completo (marca DeltaX) */
+[data-flux-sidebar] {
+    background-color: var(--color-primary) !important;
+    border-color: rgb(0 0 0 / 0.15) !important;
+    scrollbar-width: thin;
+    scrollbar-color: rgb(0 0 0 / 0.3) transparent;
+}
+
+[data-flux-sidebar]::-webkit-scrollbar {
+    width: 6px;
+}
+
+[data-flux-sidebar]::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+[data-flux-sidebar]::-webkit-scrollbar-thumb {
+    background-color: rgb(0 0 0 / 0.3);
+    border-radius: 9999px;
+}
+
+[data-flux-sidebar]::-webkit-scrollbar-thumb:hover {
+    background-color: rgb(0 0 0 / 0.45);
+}
+
+/* Texto e iconos por defecto del menú: blanco suave para contrastar con el naranja */
+[data-flux-sidebar] [data-flux-navlist-item],
+[data-flux-sidebar] summary,
+[data-flux-sidebar] [data-flux-profile],
+[data-flux-sidebar] [data-flux-profile] span,
+[data-flux-sidebar] [data-flux-sidebar-toggle],
+[data-flux-sidebar] .sidebar-logo-full button {
+    color: rgb(255 255 255 / 0.92) !important;
+}
+
+[data-flux-sidebar] [data-flux-navlist-item]:hover,
+[data-flux-sidebar] summary:hover,
+[data-flux-sidebar] [data-flux-sidebar-toggle]:hover,
+[data-flux-sidebar] .sidebar-logo-full button:hover {
+    background-color: rgb(0 0 0 / 0.12) !important;
+    color: #ffffff !important;
+}
+
+/* Encabezados de sección del menú (Menú Principal, Asistencia, etc.) */
+[data-flux-sidebar] [data-flux-navlist] > div > div:first-child > div {
+    color: rgb(255 255 255 / 0.75) !important;
+}
+
+/* Separadores de submenú */
+[data-flux-sidebar] .border-l {
+    border-color: rgb(255 255 255 / 0.25) !important;
+}
+
+/* Sección abierta que contiene la página activa */
+[data-flux-sidebar] summary.bg-zinc-200 {
+    background-color: rgb(0 0 0 / 0.2) !important;
+    color: #ffffff !important;
+}
+
+/* Enlace activo del menú: fondo oscuro para distinguirlo del naranja del sidebar */
+[data-flux-navlist-item][data-current] {
+    background-color: var(--color-zinc-900) !important;
+    border-color: transparent !important;
+    color: #ffffff !important;
+}
+
+[data-flux-navlist-item][data-current]:hover {
+    background-color: var(--color-zinc-900) !important;
+    color: #ffffff !important;
+}
+
+/* Encabezados de todas las tablas: color naranja de marca DeltaX */
+table thead {
+    background-color: var(--color-primary) !important;
+}
+
+table thead th {
+    color: #ffffff !important;
+    border-color: rgb(255 255 255 / 0.25) !important;
 }
 
 @keyframes modalDrop {

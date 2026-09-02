@@ -18,6 +18,7 @@ class LivewireEvaluaciones extends Component
 
     public $modalVisible = false;
     public $criterios = [];
+    public string $search = '';
 
     protected $paginationTheme = 'tailwind';
 
@@ -28,11 +29,27 @@ class LivewireEvaluaciones extends Component
         $this->form->resetForm();
     }
 
+    public function updatingSearch()
+    {
+        $this->resetPage();
+    }
+
     public function render()
     {
+        $query = EvaluacionDesempeno::with(['empleado.persona', 'evaluador', 'gestion', 'resultadoEvaluacion']);
+
+        if (!empty($this->search)) {
+            $query->whereHas('empleado', function ($q) {
+                $q->where('codigo_empleado', 'like', "%{$this->search}%")
+                    ->orWhereHas('persona', function ($p) {
+                        $p->where('nombres', 'like', "%{$this->search}%")
+                            ->orWhere('apellidos', 'like', "%{$this->search}%");
+                    });
+            });
+        }
+
         return view('livewire.evaluaciones.index', [
-            'evaluaciones' => EvaluacionDesempeno::with(['empleado.persona', 'evaluador', 'gestion', 'resultadoEvaluacion'])
-                ->orderByDesc('id')->paginate(10),
+            'evaluaciones' => $query->orderByDesc('id')->paginate(10),
             'empleados' => Empleado::with('persona')->where('estado', true)->get(),
             'gestiones' => Gestion::orderByDesc('anio')->get(),
         ]);

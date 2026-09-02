@@ -15,6 +15,7 @@ class LivewireGestiones extends Component
     public GestionForm $form;
 
     public $tab = 'gestiones';
+    public string $search = '';
     public $modalVisible = false;
 
     protected $paginationTheme = 'tailwind';
@@ -34,10 +35,21 @@ class LivewireGestiones extends Component
         $this->tab = $tab;
     }
 
+    public function updatingSearch()
+    {
+        $this->resetPage('gestionesPage');
+    }
+
     public function render()
     {
+        $query = Gestion::query();
+
+        if (!empty($this->search)) {
+            $query->where('anio', 'like', "%{$this->search}%");
+        }
+
         return view('livewire.gestiones.index', [
-            'gestiones' => Gestion::orderByDesc('anio')->paginate(10, ['*'], 'gestionesPage'),
+            'gestiones' => $query->orderByDesc('anio')->paginate(10, ['*'], 'gestionesPage'),
             'meses' => Mes::orderBy('numero')->get(),
         ]);
     }

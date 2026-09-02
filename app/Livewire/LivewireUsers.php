@@ -23,6 +23,7 @@ class LivewireUsers extends Component
 
     public $roles = [];
     public $modalVisible = false;
+    public string $search = '';
 
     public function mount()
     {
@@ -32,10 +33,24 @@ class LivewireUsers extends Component
                 ->get();
     }
 
+    public function updatingSearch()
+    {
+        $this->resetPage();
+    }
+
     public function render()
     {
+        $query = User::with('roles');
+
+        if (!empty($this->search)) {
+            $query->where(function ($q) {
+                $q->where('name', 'like', "%{$this->search}%")
+                    ->orWhere('email', 'like', "%{$this->search}%");
+            });
+        }
+
         return view('livewire.users.index', [
-            'users' => User::with('roles')->paginate(10),
+            'users' => $query->paginate(10),
         ]);
     }
 

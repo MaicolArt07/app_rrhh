@@ -19,6 +19,7 @@ class LivewireHorasExtra extends Component
     public HoraExtraDetalleForm $form;
 
     public $mesFiltro = '';
+    public string $search = '';
     public $modalVisible = false;
 
     protected $paginationTheme = 'tailwind';
@@ -30,6 +31,11 @@ class LivewireHorasExtra extends Component
     }
 
     public function updatingMesFiltro()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingSearch()
     {
         $this->resetPage();
     }
@@ -50,6 +56,16 @@ class LivewireHorasExtra extends Component
 
         if (!empty($this->mesFiltro)) {
             $query->whereHas('mes', fn ($m) => $m->where('numero', $this->mesFiltro));
+        }
+
+        if (!empty($this->search)) {
+            $query->whereHas('empleado', function ($q) {
+                $q->where('codigo_empleado', 'like', "%{$this->search}%")
+                    ->orWhereHas('persona', function ($p) {
+                        $p->where('nombres', 'like', "%{$this->search}%")
+                            ->orWhere('apellidos', 'like', "%{$this->search}%");
+                    });
+            });
         }
 
         return view('livewire.horas-extra.index', [

@@ -1,4 +1,8 @@
 import Swal from 'sweetalert2';
+import { Chart, registerables } from 'chart.js';
+
+Chart.register(...registerables);
+window.Chart = Chart;
 
 console.log('App initialized');
 document.addEventListener('livewire:init', () => {

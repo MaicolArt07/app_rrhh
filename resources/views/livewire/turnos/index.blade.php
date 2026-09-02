@@ -1,10 +1,16 @@
 <div class="p-6">
 
-    <div class="mb-4 flex justify-end">
+    <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
         <button wire:click="openModal"
             class="rounded bg-green-600 px-3 py-2 text-white transition hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 cursor-pointer">
             <i class="bi bi-plus-lg text-xl"></i>
         </button>
+
+        <div class="flex flex-1 flex-wrap justify-end gap-3">
+            <input type="text" wire:model.live="search"
+                class="w-full max-w-xs rounded border border-gray-300 bg-white px-3 py-2 text-zinc-800 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder:text-zinc-400"
+                placeholder="Buscar turno...">
+        </div>
     </div>
 
     <div class="overflow-x-auto rounded-lg">

@@ -20,6 +20,7 @@ class LivewireReglamentos extends Component
     public $lecturasVisible = false;
     public $reglamentoLecturasId = null;
     public $documento;
+    public string $search = '';
 
     protected $paginationTheme = 'tailwind';
 
@@ -28,10 +29,21 @@ class LivewireReglamentos extends Component
         $this->form->resetForm();
     }
 
+    public function updatingSearch()
+    {
+        $this->resetPage();
+    }
+
     public function render()
     {
+        $query = Reglamento::withCount('lecturas');
+
+        if (!empty($this->search)) {
+            $query->where('titulo', 'like', "%{$this->search}%");
+        }
+
         return view('livewire.reglamentos.index', [
-            'reglamentos' => Reglamento::withCount('lecturas')->orderByDesc('vigente_desde')->paginate(10),
+            'reglamentos' => $query->orderByDesc('vigente_desde')->paginate(10),
             'reglamentoLecturas' => $this->reglamentoLecturasId
                 ? Reglamento::with('lecturas.empleado.persona')->find($this->reglamentoLecturasId)
                 : null,

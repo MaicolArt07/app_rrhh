@@ -15,7 +15,11 @@ class RedirectToFirstPermission
         if (!$user) {
             return redirect()->route('login');
         }
-    
+
+        if ($user->can('Ver Inicio')) {
+            return $next($request);
+        }
+
         // Lista de permisos y sus rutas correspondientes
         $permissionsRoutes = [
             'Ver Inicio' => 'home',

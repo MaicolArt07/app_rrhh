@@ -58,7 +58,7 @@ class Persona extends Model implements HasMedia
 
     public function nombreCompleto(): string
     {
-        return trim("{$this->primer_nombre} {$this->segundo_nombre} {$this->primer_apellido} {$this->segundo_apellido}");
+        return trim(preg_replace('/\s+/', ' ', "{$this->primer_nombre} {$this->segundo_nombre} {$this->primer_apellido} {$this->segundo_apellido}"));
     }
 
     public function registerMediaCollections(): void

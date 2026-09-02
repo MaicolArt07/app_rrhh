@@ -6,13 +6,19 @@
             <i class="bi bi-plus-lg text-xl"></i>
         </button>
 
-        <select wire:model.live="gestionFiltro"
-            class="rounded border border-gray-300 bg-white px-3 py-2 text-zinc-800 focus:border-blue-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100">
-            <option value="">Todas las gestiones</option>
-            @foreach ($gestiones as $g)
-                <option value="{{ $g->id }}">{{ $g->anio }}</option>
-            @endforeach
-        </select>
+        <div class="flex flex-1 flex-wrap justify-end gap-3">
+            <select wire:model.live="gestionFiltro"
+                class="rounded border border-gray-300 bg-white px-3 py-2 text-zinc-800 focus:border-blue-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100">
+                <option value="">Todas las gestiones</option>
+                @foreach ($gestiones as $g)
+                    <option value="{{ $g->id }}">{{ $g->anio }}</option>
+                @endforeach
+            </select>
+
+            <input type="text" wire:model.live="search"
+                class="w-full max-w-xs rounded border border-gray-300 bg-white px-3 py-2 text-zinc-800 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder:text-zinc-400"
+                placeholder="Buscar empleado...">
+        </div>
     </div>
 
     <div class="overflow-x-auto rounded-lg">
@@ -36,9 +42,9 @@
                         <span class="block text-xs text-zinc-500 dark:text-zinc-400">{{ $item->empleado->codigo_empleado }}</span>
                     </td>
                     <td class="border border-gray-300 px-3 py-2 text-center text-zinc-800 dark:border-zinc-700 dark:text-zinc-100">{{ $item->gestion->anio ?? '—' }}</td>
-                    <td class="border border-gray-300 px-3 py-2 text-center text-zinc-800 dark:border-zinc-700 dark:text-zinc-100">{{ $item->dias_generados }}</td>
-                    <td class="border border-gray-300 px-3 py-2 text-center text-zinc-800 dark:border-zinc-700 dark:text-zinc-100">{{ $item->dias_tomados }}</td>
-                    <td class="border border-gray-300 px-3 py-2 text-center font-semibold text-green-700 dark:border-zinc-700 dark:text-green-400">{{ $item->dias_disponibles }}</td>
+                    <td class="border border-gray-300 px-3 py-2 text-center text-zinc-800 dark:border-zinc-700 dark:text-zinc-100">{{ rtrim(rtrim(number_format($item->dias_generados, 2), '0'), '.') ?: 0 }}</td>
+                    <td class="border border-gray-300 px-3 py-2 text-center text-zinc-800 dark:border-zinc-700 dark:text-zinc-100">{{ rtrim(rtrim(number_format($item->dias_tomados, 2), '0'), '.') ?: 0 }}</td>
+                    <td class="border border-gray-300 px-3 py-2 text-center font-semibold text-green-700 dark:border-zinc-700 dark:text-green-400">{{ rtrim(rtrim(number_format($item->dias_disponibles, 2), '0'), '.') ?: 0 }}</td>
                     <td class="border border-gray-300 px-3 py-2 text-center text-zinc-800 dark:border-zinc-700 dark:text-zinc-100">{{ $item->fecha_ultimo_calculo?->format('d/m/Y') ?? '—' }}</td>
                     <td class="border border-gray-300 px-3 py-2 text-center dark:border-zinc-700">
                         <button wire:click="openModal({{ $item->id }})"

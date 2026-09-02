@@ -17,6 +17,7 @@ class LivewireLiquidaciones extends Component
 
     public LiquidacionForm $form;
 
+    public string $search = '';
     public $modalVisible = false;
 
     protected $paginationTheme = 'tailwind';
@@ -26,10 +27,27 @@ class LivewireLiquidaciones extends Component
         $this->form->resetForm();
     }
 
+    public function updatingSearch()
+    {
+        $this->resetPage();
+    }
+
     public function render()
     {
+        $query = Liquidacion::with(['empleado.persona', 'tipoLiquidacion']);
+
+        if (!empty($this->search)) {
+            $query->whereHas('empleado', function ($q) {
+                $q->where('codigo_empleado', 'like', "%{$this->search}%")
+                    ->orWhereHas('persona', function ($p) {
+                        $p->where('nombres', 'like', "%{$this->search}%")
+                            ->orWhere('apellidos', 'like', "%{$this->search}%");
+                    });
+            });
+        }
+
         return view('livewire.liquidaciones.index', [
-            'liquidaciones' => Liquidacion::with(['empleado.persona', 'tipoLiquidacion'])->orderByDesc('id')->paginate(10),
+            'liquidaciones' => $query->orderByDesc('id')->paginate(10),
             'empleados' => Empleado::with('persona')->where('estado', true)->get(),
             'tiposLiquidacion' => Tipo::categoria('tipo_liquidacion')->activos()->orderBy('orden')->get(),
         ]);

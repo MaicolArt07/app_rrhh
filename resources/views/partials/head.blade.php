@@ -8,7 +8,7 @@
 <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
 
 <link rel="preconnect" href="https://fonts.bunny.net">
-<link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
+<link href="https://fonts.bunny.net/css?family=poppins:400,500,600,700" rel="stylesheet" />
 
 <!-- <link rel="stylesheet" href="{{ asset('build/assets/app-BuftZA25.css') }}">
 <script src="{{ asset('build/assets/app-l0sNRNKZ.js') }}" type="module"></script> -->

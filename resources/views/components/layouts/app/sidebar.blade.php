@@ -38,29 +38,55 @@
         x-init="init()"
         class="min-h-screen bg-zinc-100 text-zinc-800 transition-colors duration-300 dark:bg-zinc-950 dark:text-zinc-100"
     >
+        <div
+            x-data="{
+                sidebarCollapsed: localStorage.getItem('sidebarCollapsed') === 'true',
+                sidebarHovering: false,
+                get sidebarIsCollapsed() { return this.sidebarCollapsed && ! this.sidebarHovering },
+                toggleSidebar() {
+                    this.sidebarCollapsed = ! this.sidebarCollapsed;
+                    localStorage.setItem('sidebarCollapsed', this.sidebarCollapsed);
+                },
+            }"
+            class="contents"
+        >
         <flux:sidebar
             sticky
             stashable
-            class="border-e border-zinc-200 bg-zinc-50 px-3 py-3 dark:border-zinc-800 dark:bg-zinc-900"
+            class="border-e border-zinc-200 bg-zinc-50 px-3 py-3 dark:border-zinc-800 dark:bg-zinc-900 lg:transition-[width] lg:duration-200 lg:ease-linear lg:overflow-x-hidden"
+            x-bind:class="sidebarIsCollapsed ? 'lg:w-20' : 'lg:w-64'"
+            x-bind:data-sidebar-collapsed="sidebarIsCollapsed"
+            x-on:mouseenter="sidebarCollapsed && (sidebarHovering = true)"
+            x-on:mouseleave="sidebarHovering = false"
         >
             <flux:sidebar.toggle
                 class="lg:hidden rounded-lg p-2 text-zinc-600 hover:bg-zinc-200 dark:text-zinc-300 dark:hover:bg-zinc-800"
                 icon="x-mark"
             />
 
-            <a
-                href="{{ route('home') }}"
-                class="me-5 flex items-center space-x-2 rounded-xl px-2 py-2 transition hover:bg-zinc-100 dark:hover:bg-zinc-800 rtl:space-x-reverse"
-                wire:navigate
-            >
-                <x-app-logo />
-            </a>
+            <div class="me-5 flex items-center justify-center gap-1">
+                <a
+                    href="{{ route('home') }}"
+                    class="sidebar-logo-full flex min-w-0 items-center gap-2 rounded-xl px-2 py-2 transition hover:bg-black/10"
+                    wire:navigate
+                >
+                    <img src="{{ asset('img/deltax-logo-white.png') }}" alt="DeltaX" class="h-8 w-auto">
+                </a>
 
-            <div class="mt-4 mx-2 rounded-xl border border-yellow-300 bg-yellow-100 p-3 text-sm font-medium text-yellow-800 dark:border-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-200">
-                <div class="flex items-center space-x-2">
-                    <i class="bi bi-check-circle-fill"></i>
-                    <span>Sistema de Desarrollo</span>
-                </div>
+                <button
+                    type="button"
+                    x-on:click="toggleSidebar()"
+                    class="sidebar-logo-full hidden shrink-0 rounded-lg border border-zinc-300 bg-white p-2 text-zinc-600 shadow-sm hover:bg-zinc-100 hover:text-zinc-900 lg:inline-flex dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700 dark:hover:text-white"
+                    x-bind:aria-label="sidebarCollapsed ? '{{ __('Fijar menú') }}' : '{{ __('Contraer menú') }}'"
+                    x-bind:title="sidebarCollapsed ? '{{ __('Fijar menú') }}' : '{{ __('Contraer menú') }}'"
+                >
+                    <i class="bi bi-chevron-double-left" x-show="!sidebarCollapsed" x-cloak></i>
+                    <i class="bi bi-chevron-double-right" x-show="sidebarCollapsed" x-cloak></i>
+                </button>
+
+                <span class="sidebar-logo-mark hidden">
+                    <img src="{{ asset('img/deltax-icon-white.png') }}" alt="DeltaX" class="h-7 w-auto">
+                </span>
             </div>
 
             <!-- ✅ MENÚ PRINCIPAL -->
@@ -91,11 +117,11 @@
                     <details class="group" @if($isStaffSection) open @endif>
                         <summary class="flex items-center cursor-pointer rounded-xl px-3 py-2.5 transition hover:bg-zinc-200 dark:hover:bg-zinc-800 {{ $isStaffSection ? 'bg-zinc-200 font-semibold text-zinc-900 dark:bg-zinc-800 dark:text-white' : 'text-zinc-700 dark:text-zinc-200' }}">
                             <i class="bi bi-person-vcard-fill me-2"></i>
-                            <span>{{ __('Gestión de Personal') }}</span>
-                            <i class="bi bi-chevron-down ms-auto transition-transform duration-200 group-open:rotate-180"></i>
+                            <span class="sidebar-label">{{ __('Gestión de Personal') }}</span>
+                            <i class="bi bi-chevron-down ms-auto transition-transform duration-200 group-open:rotate-180 sidebar-label"></i>
                         </summary>
 
-                        <div class="ml-5 mt-2 space-y-1 border-l border-zinc-200 pl-3 dark:border-zinc-700">
+                        <div class="sidebar-label ml-5 mt-2 space-y-1 border-l border-zinc-200 pl-3 dark:border-zinc-700">
                             @can('Ver Personas')
                             <flux:navlist.item
                                 :href="route('personas')"
@@ -178,11 +204,11 @@
                     <details class="group" @if($isAttendanceSection) open @endif>
                         <summary class="flex items-center cursor-pointer rounded-xl px-3 py-2.5 transition hover:bg-zinc-200 dark:hover:bg-zinc-800 {{ $isAttendanceSection ? 'bg-zinc-200 font-semibold text-zinc-900 dark:bg-zinc-800 dark:text-white' : 'text-zinc-700 dark:text-zinc-200' }}">
                             <i class="bi bi-clock-fill me-2"></i>
-                            <span>{{ __('Asistencia') }}</span>
-                            <i class="bi bi-chevron-down ms-auto transition-transform duration-200 group-open:rotate-180"></i>
+                            <span class="sidebar-label">{{ __('Asistencia') }}</span>
+                            <i class="bi bi-chevron-down ms-auto transition-transform duration-200 group-open:rotate-180 sidebar-label"></i>
                         </summary>
 
-                        <div class="ml-5 mt-2 space-y-1 border-l border-zinc-200 pl-3 dark:border-zinc-700">
+                        <div class="sidebar-label ml-5 mt-2 space-y-1 border-l border-zinc-200 pl-3 dark:border-zinc-700">
                             <flux:navlist.item
                                 :href="route('asistencia')"
                                 :current="request()->routeIs('asistencia*')"
@@ -256,11 +282,11 @@
                     <details class="group" @if($isPayrollSection) open @endif>
                         <summary class="flex items-center cursor-pointer rounded-xl px-3 py-2.5 transition hover:bg-zinc-200 dark:hover:bg-zinc-800 {{ $isPayrollSection ? 'bg-zinc-200 font-semibold text-zinc-900 dark:bg-zinc-800 dark:text-white' : 'text-zinc-700 dark:text-zinc-200' }}">
                             <i class="bi bi-cash-stack me-2"></i>
-                            <span>{{ __('Planillas') }}</span>
-                            <i class="bi bi-chevron-down ms-auto transition-transform duration-200 group-open:rotate-180"></i>
+                            <span class="sidebar-label">{{ __('Planillas') }}</span>
+                            <i class="bi bi-chevron-down ms-auto transition-transform duration-200 group-open:rotate-180 sidebar-label"></i>
                         </summary>
 
-                        <div class="ml-5 mt-2 space-y-1 border-l border-zinc-200 pl-3 dark:border-zinc-700">
+                        <div class="sidebar-label ml-5 mt-2 space-y-1 border-l border-zinc-200 pl-3 dark:border-zinc-700">
                             <flux:navlist.item
                                 :href="route('planillas')"
                                 :current="request()->routeIs('planillas*')"
@@ -369,11 +395,11 @@
                     <details class="group" @if($isCatalogSection) open @endif>
                         <summary class="flex items-center cursor-pointer rounded-xl px-3 py-2.5 transition hover:bg-zinc-200 dark:hover:bg-zinc-800 {{ $isCatalogSection ? 'bg-zinc-200 font-semibold text-zinc-900 dark:bg-zinc-800 dark:text-white' : 'text-zinc-700 dark:text-zinc-200' }}">
                             <i class="bi bi-collection-fill me-2"></i>
-                            <span>{{ __('Catálogos') }}</span>
-                            <i class="bi bi-chevron-down ms-auto transition-transform duration-200 group-open:rotate-180"></i>
+                            <span class="sidebar-label">{{ __('Catálogos') }}</span>
+                            <i class="bi bi-chevron-down ms-auto transition-transform duration-200 group-open:rotate-180 sidebar-label"></i>
                         </summary>
 
-                        <div class="ml-5 mt-2 space-y-1 border-l border-zinc-200 pl-3 dark:border-zinc-700">
+                        <div class="sidebar-label ml-5 mt-2 space-y-1 border-l border-zinc-200 pl-3 dark:border-zinc-700">
                             @can('Ver Tipos')
                             <flux:navlist.item
                                 :href="route('tipos')"
@@ -412,11 +438,11 @@
                     <details class="group" @if($isUserSection) open @endif>
                         <summary class="flex items-center cursor-pointer rounded-xl px-3 py-2.5 transition hover:bg-zinc-200 dark:hover:bg-zinc-800 {{ $isUserSection ? 'bg-zinc-200 font-semibold text-zinc-900 dark:bg-zinc-800 dark:text-white' : 'text-zinc-700 dark:text-zinc-200' }}">
                             <i class="bi bi-people-fill me-2"></i>
-                            <span>{{ __('Usuarios') }}</span>
-                            <i class="bi bi-chevron-down ms-auto transition-transform duration-200 group-open:rotate-180"></i>
+                            <span class="sidebar-label">{{ __('Usuarios') }}</span>
+                            <i class="bi bi-chevron-down ms-auto transition-transform duration-200 group-open:rotate-180 sidebar-label"></i>
                         </summary>
 
-                        <div class="ml-5 mt-2 space-y-1 border-l border-zinc-200 pl-3 dark:border-zinc-700">
+                        <div class="sidebar-label ml-5 mt-2 space-y-1 border-l border-zinc-200 pl-3 dark:border-zinc-700">
                             @can('Ver Usuarios')
                             <flux:navlist.item
                                 :href="route('users')"
@@ -514,7 +540,7 @@
             </flux:dropdown>
 
             <!-- BOTÓN TEMA DESKTOP -->
-            <div class="mt-3 hidden lg:flex justify-center px-2">
+            <div class="mt-2 hidden lg:flex justify-center px-2">
                 <button
                     type="button"
                     @click="toggle()"
@@ -522,11 +548,12 @@
                 >
                     <i class="bi bi-moon-stars-fill dark:hidden text-zinc-700"></i>
                     <i class="bi bi-sun-fill hidden dark:inline text-yellow-400"></i>
-                    <span class="hidden dark:inline text-white" >Modo oscuro</span>
-                    <span class="dark:hidden">Modo claro</span>
+                    <span class="sidebar-label hidden dark:inline text-white" >Modo oscuro</span>
+                    <span class="sidebar-label dark:hidden">Modo claro</span>
                 </button>
             </div>
         </flux:sidebar>
+        </div>
 
         <!-- ✅ MENÚ MÓVIL -->
         <flux:header class="border-b border-zinc-200 bg-white px-3 py-2 dark:border-zinc-800 dark:bg-zinc-900 lg:hidden">
