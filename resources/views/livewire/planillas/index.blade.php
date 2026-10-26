@@ -1,144 +1,133 @@
-<div class="p-6">
+<div class="flex h-full flex-col bg-zinc-200 p-4 dark:bg-zinc-950">
 
-    @if ($detallePlanilla)
-        <div class="mb-4 flex items-center justify-between">
-            <button wire:click="cerrarDetalle" class="flex items-center gap-2 text-blue-600 hover:underline dark:text-blue-400 cursor-pointer">
-                <i class="bi bi-arrow-left"></i> Volver al listado
+    <div class="mb-3 flex flex-wrap items-center justify-between gap-3 rounded border border-zinc-300 bg-zinc-100 px-3 py-2 dark:border-zinc-700 dark:bg-zinc-900">
+        <button wire:click="openModal"
+            class="flex items-center gap-2 rounded border border-zinc-400 bg-white px-3 py-1.5 text-sm font-medium text-zinc-700 shadow-sm transition hover:bg-zinc-100 cursor-pointer dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700">
+            <i class="bi bi-plus-lg text-primary"></i> Generar Planilla
+        </button>
+
+        <div class="flex flex-1 flex-wrap items-center justify-end gap-2">
+            <input type="text" wire:model="search" wire:keydown.enter="buscar"
+                class="w-full max-w-xs rounded border border-zinc-400 bg-white px-2 py-1.5 text-sm text-zinc-800 placeholder:text-zinc-400 focus:border-primary focus:outline-none dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100"
+                placeholder="Buscar planilla...">
+
+            <button wire:click="buscar"
+                class="flex items-center gap-2 rounded border border-zinc-400 bg-white px-3 py-1.5 text-sm font-medium text-zinc-700 shadow-sm transition hover:bg-zinc-100 cursor-pointer dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700">
+                <i class="bi bi-search"></i> Buscar
             </button>
 
-            <div class="flex gap-2">
-                @php $codigoEstado = $detallePlanilla->estadoPlanilla->codigo ?? ''; @endphp
-                @if ($codigoEstado === 'borrador')
-                    <button wire:click="avanzarEstado({{ $detallePlanilla->id }}, 'revisada')"
-                            class="rounded bg-blue-600 px-3 py-2 text-sm text-white hover:bg-blue-700 cursor-pointer">Marcar Revisada</button>
-                @elseif ($codigoEstado === 'revisada')
-                    <button wire:click="avanzarEstado({{ $detallePlanilla->id }}, 'aprobada')"
-                            class="rounded bg-blue-600 px-3 py-2 text-sm text-white hover:bg-blue-700 cursor-pointer">Aprobar</button>
-                @elseif ($codigoEstado === 'aprobada')
-                    <button wire:click="avanzarEstado({{ $detallePlanilla->id }}, 'pagada')"
-                            class="rounded bg-green-600 px-3 py-2 text-sm text-white hover:bg-green-700 cursor-pointer">Marcar Pagada</button>
-                @endif
-            </div>
+            @if ($buscado)
+                <button wire:click="limpiarFiltros"
+                    class="flex items-center gap-2 rounded border border-zinc-400 bg-white px-3 py-1.5 text-sm font-medium text-zinc-700 transition hover:bg-zinc-100 cursor-pointer dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700">
+                    <i class="bi bi-x-lg"></i> Limpiar
+                </button>
+            @endif
         </div>
+    </div>
 
-        <div class="mb-4 rounded-lg border border-gray-300 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900">
-            <div class="flex flex-wrap justify-between gap-3">
-                <div>
-                    <p class="text-lg font-semibold text-zinc-800 dark:text-zinc-100">
-                        {{ $detallePlanilla->gestion->anio }}{{ $detallePlanilla->mes ? ' — ' . $detallePlanilla->mes->nombre : '' }}
-                    </p>
-                    <p class="text-sm text-zinc-500 dark:text-zinc-400">{{ $detallePlanilla->fecha_inicio->format('d/m/Y') }} al {{ $detallePlanilla->fecha_fin->format('d/m/Y') }}</p>
-                </div>
-                <div class="text-right">
-                    <span class="rounded-full bg-blue-100 px-3 py-1 text-sm font-semibold text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">{{ $detallePlanilla->estadoPlanilla->nombre ?? '' }}</span>
-                    <p class="mt-1 text-xl font-bold text-zinc-800 dark:text-zinc-100">Q {{ number_format($detallePlanilla->total_planilla, 2) }}</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="overflow-x-auto rounded-lg">
-            <table class="min-w-full border border-gray-300 text-sm shadow-sm dark:border-zinc-700">
-                <thead class="bg-gray-100 dark:bg-zinc-800">
-                <tr>
-                    <th class="border border-gray-300 px-3 py-2 text-center text-zinc-700 dark:border-zinc-700 dark:text-zinc-200">EMPLEADO</th>
-                    <th class="border border-gray-300 px-3 py-2 text-center text-zinc-700 dark:border-zinc-700 dark:text-zinc-200">SUELDO BASE</th>
-                    <th class="border border-gray-300 px-3 py-2 text-center text-zinc-700 dark:border-zinc-700 dark:text-zinc-200">INGRESOS</th>
-                    <th class="border border-gray-300 px-3 py-2 text-center text-zinc-700 dark:border-zinc-700 dark:text-zinc-200">DEDUCCIONES</th>
-                    <th class="border border-gray-300 px-3 py-2 text-center text-zinc-700 dark:border-zinc-700 dark:text-zinc-200">LÍQUIDO</th>
-                    <th class="border border-gray-300 px-3 py-2 text-center text-zinc-700 dark:border-zinc-700 dark:text-zinc-200">ESTADO PAGO</th>
-                    <th class="border border-gray-300 px-3 py-2 text-center text-zinc-700 dark:border-zinc-700 dark:text-zinc-200">BOLETA</th>
-                </tr>
-                </thead>
-                <tbody class="bg-white dark:bg-zinc-900">
-                @forelse ($detallePlanilla->detalles as $item)
-                    <tr class="hover:bg-gray-50 dark:hover:bg-zinc-800">
-                        <td class="border border-gray-300 px-3 py-2 text-zinc-800 dark:border-zinc-700 dark:text-zinc-100">
-                            {{ $item->empleado->persona?->nombreCompleto() }}
-                            <span class="block text-xs text-zinc-500 dark:text-zinc-400">{{ $item->empleado->codigo_empleado }}</span>
-                        </td>
-                        <td class="border border-gray-300 px-3 py-2 text-center text-zinc-800 dark:border-zinc-700 dark:text-zinc-100">Q {{ number_format($item->sueldo_base, 2) }}</td>
-                        <td class="border border-gray-300 px-3 py-2 text-center text-zinc-800 dark:border-zinc-700 dark:text-zinc-100">Q {{ number_format($item->total_ingresos, 2) }}</td>
-                        <td class="border border-gray-300 px-3 py-2 text-center text-zinc-800 dark:border-zinc-700 dark:text-zinc-100">Q {{ number_format($item->total_deducciones, 2) }}</td>
-                        <td class="border border-gray-300 px-3 py-2 text-center font-semibold text-zinc-800 dark:border-zinc-700 dark:text-zinc-100">Q {{ number_format($item->sueldo_liquido, 2) }}</td>
-                        <td class="border border-gray-300 px-3 py-2 text-center dark:border-zinc-700">
-                            <span class="rounded-full px-2 py-1 text-xs font-semibold {{ $item->estado_pago === 'pagado' ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300' : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300' }}">
-                                {{ ucfirst($item->estado_pago) }}
-                            </span>
-                        </td>
-                        <td class="border border-gray-300 px-3 py-2 text-center dark:border-zinc-700">
-                            <a href="{{ route('planillas.boleta', $item->id) }}" target="_blank" class="text-blue-600 hover:underline dark:text-blue-400">
-                                <i class="bi bi-file-earmark-pdf-fill text-xl"></i>
-                            </a>
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="7" class="py-3 text-center text-gray-500 dark:text-zinc-400">Esta planilla no tiene empleados.</td>
-                    </tr>
-                @endforelse
-                </tbody>
-            </table>
+    @if (!$buscado)
+        <div class="flex flex-1 flex-col items-center justify-center gap-3 rounded border border-dashed border-zinc-400 bg-zinc-100 text-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400">
+            <i class="bi bi-funnel text-4xl"></i>
+            <p class="text-sm">Selecciona los filtros que necesites y presiona <strong>Buscar</strong> para ver las planillas.</p>
         </div>
     @else
-        <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
-            <button wire:click="openModal"
-                class="rounded bg-green-600 px-3 py-2 text-white transition hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 cursor-pointer">
-                <i class="bi bi-plus-lg"></i> Generar Planilla
-            </button>
-
-            <div class="flex flex-1 flex-wrap justify-end gap-3">
-                <input type="text" wire:model.live="search"
-                    class="w-full max-w-xs rounded border border-gray-300 bg-white px-3 py-2 text-zinc-800 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder:text-zinc-400"
-                    placeholder="Buscar planilla...">
-            </div>
-        </div>
-
-        <div class="overflow-x-auto rounded-lg">
-            <table class="min-w-full border border-gray-300 text-sm shadow-sm dark:border-zinc-700">
-                <thead class="bg-gray-100 dark:bg-zinc-800">
+        <div class="hidden flex-1 overflow-auto rounded border border-zinc-300 dark:border-zinc-700 md:block">
+            <table class="min-w-full border-collapse text-sm">
+                <thead class="sticky top-0 bg-zinc-300 dark:bg-zinc-800">
                 <tr>
-                    <th class="border border-gray-300 px-3 py-2 text-center text-zinc-700 dark:border-zinc-700 dark:text-zinc-200">GESTIÓN</th>
-                    <th class="border border-gray-300 px-3 py-2 text-center text-zinc-700 dark:border-zinc-700 dark:text-zinc-200">TIPO</th>
-                    <th class="border border-gray-300 px-3 py-2 text-center text-zinc-700 dark:border-zinc-700 dark:text-zinc-200">PERIODO</th>
-                    <th class="border border-gray-300 px-3 py-2 text-center text-zinc-700 dark:border-zinc-700 dark:text-zinc-200">TOTAL</th>
-                    <th class="border border-gray-300 px-3 py-2 text-center text-zinc-700 dark:border-zinc-700 dark:text-zinc-200">ESTADO</th>
-                    <th class="border border-gray-300 px-3 py-2 text-center text-zinc-700 dark:border-zinc-700 dark:text-zinc-200">GENERADA POR</th>
-                    <th class="border border-gray-300 px-3 py-2 text-center text-zinc-700 dark:border-zinc-700 dark:text-zinc-200">OPCIONES</th>
+                    <th class="border-b border-zinc-400 px-3 py-1.5 text-center font-semibold text-zinc-700 dark:border-zinc-600 dark:text-zinc-200">Gestión</th>
+                    <th class="border-b border-zinc-400 px-3 py-1.5 text-center font-semibold text-zinc-700 dark:border-zinc-600 dark:text-zinc-200">Tipo</th>
+                    <th class="border-b border-zinc-400 px-3 py-1.5 text-center font-semibold text-zinc-700 dark:border-zinc-600 dark:text-zinc-200">Periodo</th>
+                    <th class="border-b border-zinc-400 px-3 py-1.5 text-center font-semibold text-zinc-700 dark:border-zinc-600 dark:text-zinc-200">Total</th>
+                    <th class="border-b border-zinc-400 px-3 py-1.5 text-center font-semibold text-zinc-700 dark:border-zinc-600 dark:text-zinc-200">Estado</th>
+                    <th class="border-b border-zinc-400 px-3 py-1.5 text-center font-semibold text-zinc-700 dark:border-zinc-600 dark:text-zinc-200">Generada por</th>
+                    <th class="border-b border-zinc-400 px-3 py-1.5 text-center font-semibold text-zinc-700 dark:border-zinc-600 dark:text-zinc-200">Opciones</th>
                 </tr>
                 </thead>
                 <tbody class="bg-white dark:bg-zinc-900">
                 @forelse ($planillas as $item)
-                    <tr class="hover:bg-gray-50 dark:hover:bg-zinc-800">
-                        <td class="border border-gray-300 px-3 py-2 text-center text-zinc-800 dark:border-zinc-700 dark:text-zinc-100">{{ $item->gestion->anio ?? '—' }}</td>
-                        <td class="border border-gray-300 px-3 py-2 text-center text-zinc-800 dark:border-zinc-700 dark:text-zinc-100">{{ $item->tipoPlanilla->nombre ?? '—' }}</td>
-                        <td class="border border-gray-300 px-3 py-2 text-center text-zinc-800 dark:border-zinc-700 dark:text-zinc-100">{{ $item->fecha_inicio->format('d/m') }} - {{ $item->fecha_fin->format('d/m/Y') }}</td>
-                        <td class="border border-gray-300 px-3 py-2 text-center font-semibold text-zinc-800 dark:border-zinc-700 dark:text-zinc-100">Q {{ number_format($item->total_planilla, 2) }}</td>
-                        <td class="border border-gray-300 px-3 py-2 text-center dark:border-zinc-700">
-                            <span class="rounded-full bg-blue-100 px-2 py-1 text-xs font-semibold text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">{{ $item->estadoPlanilla->nombre ?? '—' }}</span>
+                    <tr wire:click="verDetalle({{ $item->id }})" class="cursor-pointer border-b border-zinc-200 hover:bg-zinc-100 dark:border-zinc-800 dark:hover:bg-zinc-800">
+                        <td class="px-3 py-1.5 text-center text-zinc-800 dark:text-zinc-100">{{ $item->gestion->anio ?? '—' }}</td>
+                        <td class="px-3 py-1.5 text-center text-zinc-800 dark:text-zinc-100">{{ $item->tipoPlanilla->nombre ?? '—' }}</td>
+                        <td class="px-3 py-1.5 text-center text-zinc-800 dark:text-zinc-100">{{ $item->fecha_inicio->format('d/m') }} - {{ $item->fecha_fin->format('d/m/Y') }}</td>
+                        <td class="px-3 py-1.5 text-center font-semibold text-zinc-800 dark:text-zinc-100">Q {{ number_format($item->total_planilla, 2) }}</td>
+                        <td class="px-3 py-1.5 text-center">
+                            <span class="rounded px-2 py-0.5 text-xs font-semibold bg-zinc-200 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">{{ $item->estadoPlanilla->nombre ?? '—' }}</span>
                         </td>
-                        <td class="border border-gray-300 px-3 py-2 text-center text-zinc-800 dark:border-zinc-700 dark:text-zinc-100">{{ $item->generadoPor->name ?? '—' }}</td>
-                        <td class="border border-gray-300 px-3 py-2 text-center dark:border-zinc-700">
-                            <button wire:click="verDetalle({{ $item->id }})" class="text-blue-600 hover:underline dark:text-blue-400 cursor-pointer">
-                                <i class="bi bi-eye-fill text-xl"></i>
+                        <td class="px-3 py-1.5 text-center text-zinc-800 dark:text-zinc-100">{{ $item->generadoPor->name ?? '—' }}</td>
+                        <td class="px-3 py-1.5 text-center" onclick="event.stopPropagation()">
+                            <button wire:click="verDetalle({{ $item->id }})" class="text-zinc-500 transition hover:text-primary dark:text-zinc-400 cursor-pointer">
+                                <i class="bi bi-eye-fill"></i>
                             </button>
                         </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="7" class="py-3 text-center text-gray-500 dark:text-zinc-400">No hay planillas generadas.</td>
+                        <td colspan="7" class="py-3 text-center text-zinc-500 dark:text-zinc-400">No se encontraron planillas con esos filtros.</td>
                     </tr>
                 @endforelse
                 </tbody>
             </table>
         </div>
 
-        <div class="mt-4 dark:text-zinc-200">
+        <div class="flex flex-col gap-2 md:hidden">
+            @forelse ($planillas as $item)
+                <div x-data="{ open: false }"
+                     class="rounded border border-zinc-300 bg-white p-3 dark:border-zinc-700 dark:bg-zinc-900">
+                    <div class="flex items-center gap-2">
+                        <button type="button" x-on:click.stop="open = !open"
+                            class="flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-full border border-primary text-primary transition hover:bg-primary hover:text-white">
+                            <i class="bi text-xs" :class="open ? 'bi-dash' : 'bi-plus'"></i>
+                        </button>
+
+                        <div wire:click="verDetalle({{ $item->id }})" class="min-w-0 flex-1 cursor-pointer">
+                            <p class="truncate text-sm font-medium text-zinc-800 dark:text-zinc-100">{{ $item->gestion->anio ?? '—' }} — {{ $item->tipoPlanilla->nombre ?? '—' }}</p>
+                            <p class="truncate text-xs text-zinc-500 dark:text-zinc-400">{{ $item->fecha_inicio->format('d/m') }} - {{ $item->fecha_fin->format('d/m/Y') }}</p>
+                        </div>
+
+                        <div class="flex shrink-0 gap-3" onclick="event.stopPropagation()">
+                            <button wire:click="verDetalle({{ $item->id }})" class="text-zinc-500 transition hover:text-primary dark:text-zinc-400 cursor-pointer">
+                                <i class="bi bi-eye-fill"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div x-show="open" x-collapse x-cloak onclick="event.stopPropagation()"
+                         class="mt-2 grid grid-cols-2 gap-2 border-t border-zinc-200 pt-2 pl-8 dark:border-zinc-800">
+                        <div>
+                            <span class="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">Total</span>
+                            <p class="text-sm text-zinc-800 dark:text-zinc-100">Q {{ number_format($item->total_planilla, 2) }}</p>
+                        </div>
+                        <div>
+                            <span class="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">Estado</span>
+                            <p class="text-sm">
+                                <span class="rounded px-2 py-0.5 text-xs font-semibold bg-zinc-200 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">{{ $item->estadoPlanilla->nombre ?? '—' }}</span>
+                            </p>
+                        </div>
+                        <div>
+                            <span class="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">Generada por</span>
+                            <p class="text-sm text-zinc-800 dark:text-zinc-100">{{ $item->generadoPor->name ?? '—' }}</p>
+                        </div>
+                    </div>
+                </div>
+            @empty
+                <div class="rounded border border-zinc-300 bg-white p-4 text-center text-sm text-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400">
+                    No se encontraron planillas con esos filtros.
+                </div>
+            @endforelse
+        </div>
+
+        <div class="mt-3 dark:text-zinc-200">
             {{ $planillas->links() }}
         </div>
     @endif
 
     @if ($modalVisible)
         @include('livewire.planillas.modal.index')
+    @endif
+
+    @if ($viewingId && $planillaDetalle)
+        @include('livewire.planillas.detalle')
     @endif
 
 </div>

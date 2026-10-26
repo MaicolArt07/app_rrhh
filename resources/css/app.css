@@ -75,6 +75,11 @@ select:focus[data-flux-control] {
     display: none !important;
 }
 
+/* Tipografía general un poco más compacta en toda la app */
+html {
+    font-size: 14px;
+}
+
 /* Sidebar colapsable: iconos únicamente, se expande al pasar el cursor */
 @media (min-width: 64rem) {
     [data-sidebar-collapsed="true"] .sidebar-label,
@@ -95,12 +100,18 @@ select:focus[data-flux-control] {
     }
 }
 
-/* Sidebar con fondo naranja completo (marca DeltaX) */
+/* Sidebar neutro: blanco en modo claro, oscuro en modo oscuro (sin naranja de fondo) */
 [data-flux-sidebar] {
-    background-color: var(--color-primary) !important;
-    border-color: rgb(0 0 0 / 0.15) !important;
+    background-color: #ffffff !important;
+    border-color: var(--color-zinc-200) !important;
     scrollbar-width: thin;
-    scrollbar-color: rgb(0 0 0 / 0.3) transparent;
+    scrollbar-color: rgb(0 0 0 / 0.2) transparent;
+}
+
+.dark [data-flux-sidebar] {
+    background-color: var(--color-zinc-950) !important;
+    border-color: var(--color-zinc-800) !important;
+    scrollbar-color: rgb(255 255 255 / 0.2) transparent;
 }
 
 [data-flux-sidebar]::-webkit-scrollbar {
@@ -112,68 +123,103 @@ select:focus[data-flux-control] {
 }
 
 [data-flux-sidebar]::-webkit-scrollbar-thumb {
-    background-color: rgb(0 0 0 / 0.3);
+    background-color: rgb(0 0 0 / 0.2);
     border-radius: 9999px;
 }
 
-[data-flux-sidebar]::-webkit-scrollbar-thumb:hover {
-    background-color: rgb(0 0 0 / 0.45);
+.dark [data-flux-sidebar]::-webkit-scrollbar-thumb {
+    background-color: rgb(255 255 255 / 0.2);
 }
 
-/* Texto e iconos por defecto del menú: blanco suave para contrastar con el naranja */
+/* Texto e iconos por defecto del menú */
 [data-flux-sidebar] [data-flux-navlist-item],
 [data-flux-sidebar] summary,
 [data-flux-sidebar] [data-flux-profile],
 [data-flux-sidebar] [data-flux-profile] span,
 [data-flux-sidebar] [data-flux-sidebar-toggle],
 [data-flux-sidebar] .sidebar-logo-full button {
-    color: rgb(255 255 255 / 0.92) !important;
+    color: var(--color-zinc-600) !important;
+}
+
+.dark [data-flux-sidebar] [data-flux-navlist-item],
+.dark [data-flux-sidebar] summary,
+.dark [data-flux-sidebar] [data-flux-profile],
+.dark [data-flux-sidebar] [data-flux-profile] span,
+.dark [data-flux-sidebar] [data-flux-sidebar-toggle],
+.dark [data-flux-sidebar] .sidebar-logo-full button {
+    color: var(--color-zinc-300) !important;
 }
 
 [data-flux-sidebar] [data-flux-navlist-item]:hover,
 [data-flux-sidebar] summary:hover,
 [data-flux-sidebar] [data-flux-sidebar-toggle]:hover,
 [data-flux-sidebar] .sidebar-logo-full button:hover {
-    background-color: rgb(0 0 0 / 0.12) !important;
+    background-color: var(--color-zinc-100) !important;
+    color: var(--color-zinc-900) !important;
+}
+
+.dark [data-flux-sidebar] [data-flux-navlist-item]:hover,
+.dark [data-flux-sidebar] summary:hover,
+.dark [data-flux-sidebar] [data-flux-sidebar-toggle]:hover,
+.dark [data-flux-sidebar] .sidebar-logo-full button:hover {
+    background-color: var(--color-zinc-800) !important;
     color: #ffffff !important;
 }
 
 /* Encabezados de sección del menú (Menú Principal, Asistencia, etc.) */
 [data-flux-sidebar] [data-flux-navlist] > div > div:first-child > div {
-    color: rgb(255 255 255 / 0.75) !important;
+    color: var(--color-zinc-400) !important;
 }
 
 /* Separadores de submenú */
 [data-flux-sidebar] .border-l {
-    border-color: rgb(255 255 255 / 0.25) !important;
+    border-color: var(--color-zinc-200) !important;
 }
 
-/* Sección abierta que contiene la página activa */
+.dark [data-flux-sidebar] .border-l {
+    border-color: var(--color-zinc-700) !important;
+}
+
+/* Sección abierta que contiene la página activa: acento naranja suave */
 [data-flux-sidebar] summary.bg-zinc-200 {
-    background-color: rgb(0 0 0 / 0.2) !important;
+    background-color: rgb(236 148 5 / 0.12) !important;
+    color: var(--color-zinc-900) !important;
+}
+
+.dark [data-flux-sidebar] summary.bg-zinc-200 {
+    background-color: rgb(236 148 5 / 0.18) !important;
     color: #ffffff !important;
 }
 
-/* Enlace activo del menú: fondo oscuro para distinguirlo del naranja del sidebar */
+/* Enlace activo del menú: acento sutil en vez de bloque naranja sólido */
 [data-flux-navlist-item][data-current] {
-    background-color: var(--color-zinc-900) !important;
-    border-color: transparent !important;
+    background-color: var(--color-zinc-800) !important;
+    border-left: 3px solid var(--color-primary) !important;
     color: #ffffff !important;
 }
 
 [data-flux-navlist-item][data-current]:hover {
-    background-color: var(--color-zinc-900) !important;
+    background-color: var(--color-zinc-800) !important;
     color: #ffffff !important;
 }
 
-/* Encabezados de todas las tablas: color naranja de marca DeltaX */
+/* Encabezados de todas las tablas: gris plomo neutro, sin naranja */
 table thead {
-    background-color: var(--color-primary) !important;
+    background-color: var(--color-zinc-300) !important;
+}
+
+.dark table thead {
+    background-color: var(--color-zinc-800) !important;
 }
 
 table thead th {
-    color: #ffffff !important;
-    border-color: rgb(255 255 255 / 0.25) !important;
+    color: var(--color-zinc-700) !important;
+    border-color: var(--color-zinc-400) !important;
+}
+
+.dark table thead th {
+    color: var(--color-zinc-200) !important;
+    border-color: var(--color-zinc-600) !important;
 }
 
 @keyframes modalDrop {

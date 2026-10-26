@@ -18,7 +18,7 @@ class RevisarVencimientos extends Command
         $dias = (int) $this->option('dias');
         $limite = now()->addDays($dias);
 
-        $contratos = Contrato::with('empleado.persona')
+        $contratos = Contrato::with(['empleado.persona', 'tipoContrato'])
             ->where('estado', true)
             ->where('notificado_vencimiento', false)
             ->whereNotNull('fecha_fin')
@@ -27,13 +27,18 @@ class RevisarVencimientos extends Command
 
         foreach ($contratos as $contrato) {
             $nombre = $contrato->empleado->persona?->nombreCompleto() ?? $contrato->empleado->codigo_empleado;
-            $notificaciones->notificarUsuariosConPermiso(
-                'Ver Contratos',
-                'contrato_por_vencer',
-                'Contrato por vencer',
-                "El contrato de {$nombre} vence el {$contrato->fecha_fin->format('d/m/Y')}.",
-                $contrato
-            );
+            $vence = $contrato->fecha_fin->format('d/m/Y');
+
+            if ($contrato->esUltimaPrestacion()) {
+                $titulo = 'Vence el segundo contrato por prestación';
+                $mensaje = "El {$contrato->etiquetaNumero()} contrato por prestación de servicios de {$nombre} vence el {$vence}. "
+                    .'No puede renovarse otra vez como prestación (Ministerio de Trabajo): debe pasar a contrato indefinido.';
+            } else {
+                $titulo = 'Contrato por vencer';
+                $mensaje = "El contrato de {$nombre} vence el {$vence}.";
+            }
+
+            $notificaciones->notificarUsuariosConPermiso('Ver Contratos', 'contrato_por_vencer', $titulo, $mensaje, $contrato);
             $contrato->update(['notificado_vencimiento' => true]);
         }
 

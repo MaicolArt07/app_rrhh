@@ -17,6 +17,9 @@ class LivewireFeriados extends Component
     public $gestionFiltro = '';
     public string $search = '';
     public $modalVisible = false;
+    public bool $buscado = false;
+
+    public ?int $viewingId = null;
 
     protected $paginationTheme = 'tailwind';
 
@@ -36,20 +39,57 @@ class LivewireFeriados extends Component
         $this->resetPage();
     }
 
+    public function buscar()
+    {
+        $this->resetPage();
+        $this->buscado = true;
+    }
+
+    public function limpiarFiltros()
+    {
+        $this->reset('search', 'gestionFiltro');
+        $this->buscado = false;
+    }
+
+    public function verDetalle($id)
+    {
+        $this->viewingId = $id;
+    }
+
+    public function cerrarDetalle()
+    {
+        $this->viewingId = null;
+    }
+
+    public function editarDesdeDetalle($id)
+    {
+        $this->viewingId = null;
+        $this->openModal($id);
+    }
+
     public function render()
     {
-        $query = Feriado::query()->with('gestion');
+        $feriados = null;
 
-        if (!empty($this->gestionFiltro)) {
-            $query->where('id_gestion', $this->gestionFiltro);
-        }
+        if ($this->buscado) {
+            $query = Feriado::query()->with('gestion');
 
-        if (!empty($this->search)) {
-            $query->where('descripcion', 'like', "%{$this->search}%");
+            if (!empty($this->gestionFiltro)) {
+                $query->where('id_gestion', $this->gestionFiltro);
+            }
+
+            if (!empty($this->search)) {
+                $query->where('descripcion', 'like', "%{$this->search}%");
+            }
+
+            $feriados = $query->orderBy('fecha')->paginate(15);
         }
 
         return view('livewire.feriados.index', [
-            'feriados' => $query->orderBy('fecha')->paginate(15),
+            'feriados' => $feriados,
+            'feriadoDetalle' => $this->viewingId
+                ? Feriado::with('gestion')->find($this->viewingId)
+                : null,
             'gestiones' => Gestion::orderByDesc('anio')->get(),
         ]);
     }

@@ -18,6 +18,9 @@ class LivewireSaldosVacaciones extends Component
     public $gestionFiltro = '';
     public string $search = '';
     public $modalVisible = false;
+    public bool $buscado = false;
+
+    public ?int $viewingId = null;
 
     protected $paginationTheme = 'tailwind';
 
@@ -37,26 +40,63 @@ class LivewireSaldosVacaciones extends Component
         $this->resetPage();
     }
 
+    public function buscar()
+    {
+        $this->resetPage();
+        $this->buscado = true;
+    }
+
+    public function limpiarFiltros()
+    {
+        $this->reset('search', 'gestionFiltro');
+        $this->buscado = false;
+    }
+
+    public function verDetalle($id)
+    {
+        $this->viewingId = $id;
+    }
+
+    public function cerrarDetalle()
+    {
+        $this->viewingId = null;
+    }
+
+    public function editarDesdeDetalle($id)
+    {
+        $this->viewingId = null;
+        $this->openModal($id);
+    }
+
     public function render()
     {
-        $query = SaldoVacacion::query()->with(['empleado.persona', 'gestion']);
+        $saldos = null;
 
-        if (!empty($this->gestionFiltro)) {
-            $query->where('id_gestion', $this->gestionFiltro);
-        }
+        if ($this->buscado) {
+            $query = SaldoVacacion::query()->with(['empleado.persona', 'gestion']);
 
-        if (!empty($this->search)) {
-            $query->whereHas('empleado', function ($q) {
-                $q->where('codigo_empleado', 'like', "%{$this->search}%")
-                    ->orWhereHas('persona', function ($p) {
-                        $p->where('nombres', 'like', "%{$this->search}%")
-                            ->orWhere('apellidos', 'like', "%{$this->search}%");
-                    });
-            });
+            if (!empty($this->gestionFiltro)) {
+                $query->where('id_gestion', $this->gestionFiltro);
+            }
+
+            if (!empty($this->search)) {
+                $query->whereHas('empleado', function ($q) {
+                    $q->where('codigo_empleado', 'like', "%{$this->search}%")
+                        ->orWhereHas('persona', function ($p) {
+                            $p->where('primer_nombre', 'like', "%{$this->search}%")
+                                ->orWhere('primer_apellido', 'like', "%{$this->search}%");
+                        });
+                });
+            }
+
+            $saldos = $query->orderByDesc('id')->paginate(10);
         }
 
         return view('livewire.saldos-vacaciones.index', [
-            'saldos' => $query->orderByDesc('id')->paginate(10),
+            'saldos' => $saldos,
+            'saldoDetalle' => $this->viewingId
+                ? SaldoVacacion::with(['empleado.persona', 'gestion'])->find($this->viewingId)
+                : null,
             'empleados' => Empleado::with('persona')->where('estado', true)->get(),
             'gestiones' => Gestion::orderByDesc('anio')->get(),
         ]);

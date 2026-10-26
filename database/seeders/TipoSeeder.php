@@ -50,10 +50,7 @@ class TipoSeeder extends Seeder
             ],
             'tipo_contrato' => [
                 ['indefinido', 'Indefinido'],
-                ['temporal', 'Temporal'],
-                ['por_obra', 'Por Obra'],
-                ['practicante', 'Practicante'],
-                ['medio_tiempo', 'Medio Tiempo'],
+                ['prestacion', 'Prestación de Servicios'],
             ],
             'tipo_documento_empleado' => [
                 ['licencia_conducir', 'Licencia de Conducir'],
@@ -86,6 +83,7 @@ class TipoSeeder extends Seeder
                 ['planilla_lista', 'Planilla Lista'],
                 ['permiso_solicitado', 'Permiso Solicitado'],
                 ['permiso_aprobado', 'Permiso Aprobado'],
+                ['segundo_contrato', 'Segundo Contrato por Prestación'],
             ],
             'tipo_anticipo' => [
                 ['anticipo_sueldo', 'Anticipo de Sueldo'],

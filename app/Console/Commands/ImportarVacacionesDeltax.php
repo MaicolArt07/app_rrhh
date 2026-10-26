@@ -2,9 +2,9 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Area;
 use App\Models\Cargo;
 use App\Models\Contrato;
-use App\Models\Departamento;
 use App\Models\Empleado;
 use App\Models\Gestion;
 use App\Models\Persona;
@@ -153,13 +153,13 @@ class ImportarVacacionesDeltax extends Command
                     ]
                 );
 
-                $departamento = Departamento::firstOrCreate(
+                $areaModelo = Area::firstOrCreate(
                     ['nombre' => $area],
                     ['estado' => true]
                 );
 
                 $cargo = Cargo::firstOrCreate(
-                    ['nombre' => $ocupacion, 'id_departamento' => $departamento->id],
+                    ['nombre' => $ocupacion, 'id_area' => $areaModelo->id],
                     ['sueldo_base' => 0, 'estado' => true]
                 );
 
@@ -168,7 +168,7 @@ class ImportarVacacionesDeltax extends Command
                     [
                         'codigo_empleado' => 'EMP-'.$numeroDocumento,
                         'id_cargo' => $cargo->id,
-                        'id_departamento' => $departamento->id,
+                        'id_area' => $areaModelo->id,
                         'fecha_ingreso' => $fechaIngreso,
                         'sueldo_actual' => 0,
                         'id_estado_empleado' => $estadoActivo->id,

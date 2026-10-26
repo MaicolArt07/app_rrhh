@@ -19,6 +19,8 @@ class LivewirePersonas extends Component
     public $search = '';
     public $modalVisible = false;
     public $foto;
+    public bool $buscado = false;
+    public ?int $viewingId = null;
 
     protected $paginationTheme = 'tailwind';
 
@@ -32,21 +34,58 @@ class LivewirePersonas extends Component
         $this->resetPage();
     }
 
+    public function buscar()
+    {
+        $this->resetPage();
+        $this->buscado = true;
+    }
+
+    public function limpiarFiltros()
+    {
+        $this->reset('search');
+        $this->buscado = false;
+    }
+
+    public function verDetalle($id)
+    {
+        $this->viewingId = $id;
+    }
+
+    public function cerrarDetalle()
+    {
+        $this->viewingId = null;
+    }
+
+    public function editarDesdeDetalle($id)
+    {
+        $this->viewingId = null;
+        $this->openModal($id);
+    }
+
     public function render()
     {
-        $query = Persona::query()->with('tipoDocumento');
+        $personas = null;
 
-        if (!empty($this->search)) {
-            $query->where(function ($q) {
-                $q->where('primer_nombre', 'like', "%{$this->search}%")
-                  ->orWhere('primer_apellido', 'like', "%{$this->search}%")
-                  ->orWhere('numero_documento', 'like', "%{$this->search}%")
-                  ->orWhere('email', 'like', "%{$this->search}%");
-            });
+        if ($this->buscado) {
+            $query = Persona::query()->with('tipoDocumento');
+
+            if (!empty($this->search)) {
+                $query->where(function ($q) {
+                    $q->where('primer_nombre', 'like', "%{$this->search}%")
+                      ->orWhere('primer_apellido', 'like', "%{$this->search}%")
+                      ->orWhere('numero_documento', 'like', "%{$this->search}%")
+                      ->orWhere('email', 'like', "%{$this->search}%");
+                });
+            }
+
+            $personas = $query->orderByDesc('id')->paginate(10);
         }
 
         return view('livewire.personas.index', [
-            'personas' => $query->orderByDesc('id')->paginate(10),
+            'personas' => $personas,
+            'personaDetalle' => $this->viewingId
+                ? Persona::with(['tipoDocumento', 'empleado.cargo', 'empleado.area'])->find($this->viewingId)
+                : null,
             'tiposDocumento' => Tipo::categoria('tipo_documento')->activos()->orderBy('orden')->get(),
         ]);
     }

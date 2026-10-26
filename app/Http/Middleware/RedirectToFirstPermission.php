@@ -26,7 +26,7 @@ class RedirectToFirstPermission
             'Ver Personas' => 'personas',
             'Ver Empleados' => 'empleados',
             'Ver Cargos' => 'cargos',
-            'Ver Departamentos' => 'departamentos',
+            'Ver Áreas' => 'areas',
             'Ver Contratos' => 'contratos',
             'Ver Documentos' => 'documentos',
             'Ver Asistencia' => 'asistencia',

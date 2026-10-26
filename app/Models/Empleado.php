@@ -21,9 +21,12 @@ class Empleado extends Model
 
     protected $fillable = [
         'id_persona',
+        'id_empresa',
         'codigo_empleado',
+        'codigo_biometrico',
+        'email_corporativo',
         'id_cargo',
-        'id_departamento',
+        'id_area',
         'fecha_ingreso',
         'fecha_baja',
         'sueldo_actual',
@@ -40,9 +43,27 @@ class Empleado extends Model
         'estado' => 'boolean',
     ];
 
+    /** Un código biométrico vacío se guarda como NULL (la columna es única). */
+    public function setCodigoBiometricoAttribute($valor): void
+    {
+        $valor = trim((string) $valor);
+        $this->attributes['codigo_biometrico'] = $valor === '' ? null : $valor;
+    }
+
     public function persona()
     {
         return $this->belongsTo(Persona::class, 'id_persona');
+    }
+
+    public function empresa()
+    {
+        return $this->belongsTo(Empresa::class, 'id_empresa');
+    }
+
+    /** Contrato vigente más reciente. */
+    public function contratoVigente()
+    {
+        return $this->hasOne(Contrato::class, 'id_empleado')->where('estado', true)->latestOfMany('fecha_inicio');
     }
 
     public function cargo()
@@ -50,9 +71,9 @@ class Empleado extends Model
         return $this->belongsTo(Cargo::class, 'id_cargo');
     }
 
-    public function departamento()
+    public function area()
     {
-        return $this->belongsTo(Departamento::class, 'id_departamento');
+        return $this->belongsTo(Area::class, 'id_area');
     }
 
     public function estadoEmpleado()
@@ -85,6 +106,11 @@ class Empleado extends Model
     public function asistencias()
     {
         return $this->hasMany(Asistencia::class, 'id_empleado');
+    }
+
+    public function diasRemotos()
+    {
+        return $this->hasMany(DiaRemoto::class, 'id_empleado');
     }
 
     public function permisosLaborales()

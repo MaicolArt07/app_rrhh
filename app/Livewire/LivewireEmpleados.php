@@ -3,9 +3,10 @@
 namespace App\Livewire;
 
 use App\Livewire\Form\EmpleadoForm;
+use App\Models\Area;
 use App\Models\Cargo;
-use App\Models\Departamento;
 use App\Models\Empleado;
+use App\Models\Empresa;
 use App\Models\Persona;
 use App\Models\Tipo;
 use Livewire\Component;
@@ -18,14 +19,37 @@ class LivewireEmpleados extends Component
     public EmpleadoForm $form;
 
     public $search = '';
-    public $departamentoFiltro = '';
+    public $areaFiltro = '';
+    public $tipoContratoFiltro = '';
+    public $soloActivos = true;
     public $modalVisible = false;
+    public bool $buscado = false;
+    public ?int $viewingId = null;
+
+    /** Empresa fija cuando se entra desde «Personal <empresa>». */
+    public ?int $empresaId = null;
 
     protected $paginationTheme = 'tailwind';
 
-    public function mount()
+    /** @param  Empresa|string|null  $empresa  código de la ruta /personal/{empresa} */
+    public function mount($empresa = null)
     {
+        if ($empresa !== null && ! $empresa instanceof Empresa) {
+            $empresa = Empresa::where('codigo', $empresa)->firstOrFail();
+        }
+
+        $this->empresaId = $empresa?->id;
         $this->form->resetForm();
+    }
+
+    public function updatingTipoContratoFiltro()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingSoloActivos()
+    {
+        $this->resetPage();
     }
 
     public function updatingSearch()
@@ -33,9 +57,42 @@ class LivewireEmpleados extends Component
         $this->resetPage();
     }
 
-    public function updatingDepartamentoFiltro()
+    public function updatingAreaFiltro()
     {
         $this->resetPage();
+    }
+
+    public function buscar()
+    {
+        $this->resetPage();
+        $this->buscado = true;
+    }
+
+    public function limpiarFiltros()
+    {
+        $this->reset('search', 'areaFiltro', 'tipoContratoFiltro', 'soloActivos', 'empresaId');
+        $this->buscado = false;
+    }
+
+    public function updatingEmpresaId()
+    {
+        $this->resetPage();
+    }
+
+    public function verDetalle($id)
+    {
+        $this->viewingId = $id;
+    }
+
+    public function cerrarDetalle()
+    {
+        $this->viewingId = null;
+    }
+
+    public function editarDesdeDetalle($id)
+    {
+        $this->viewingId = null;
+        $this->openModal($id);
     }
 
     public function updatedFormIdCargo($value)
@@ -43,7 +100,7 @@ class LivewireEmpleados extends Component
         if ($value) {
             $cargo = Cargo::find($value);
             if ($cargo) {
-                $this->form->id_departamento = $cargo->id_departamento;
+                $this->form->id_area = $cargo->id_area;
                 if (!$this->form->sueldo_actual) {
                     $this->form->sueldo_actual = $cargo->sueldo_base;
                 }
@@ -53,26 +110,51 @@ class LivewireEmpleados extends Component
 
     public function render()
     {
-        $query = Empleado::query()->with(['persona', 'cargo', 'departamento', 'estadoEmpleado']);
+        $empleados = null;
 
-        if (!empty($this->departamentoFiltro)) {
-            $query->where('id_departamento', $this->departamentoFiltro);
-        }
+        if ($this->buscado) {
+            $query = Empleado::query()->with(['persona', 'cargo', 'area', 'empresa', 'estadoEmpleado', 'contratoVigente.tipoContrato']);
 
-        if (!empty($this->search)) {
-            $query->where(function ($q) {
-                $q->where('codigo_empleado', 'like', "%{$this->search}%")
-                  ->orWhereHas('persona', function ($p) {
-                      $p->where('primer_nombre', 'like', "%{$this->search}%")
-                        ->orWhere('primer_apellido', 'like', "%{$this->search}%")
-                        ->orWhere('numero_documento', 'like', "%{$this->search}%");
-                  });
-            });
+            if ($this->empresaId) {
+                $query->where('id_empresa', $this->empresaId);
+            }
+
+            if (!empty($this->areaFiltro)) {
+                $query->where('id_area', $this->areaFiltro);
+            }
+
+            if ($this->soloActivos) {
+                $query->where('estado', true);
+            }
+
+            if (!empty($this->tipoContratoFiltro)) {
+                $query->whereHas('contratoVigente', fn ($c) => $c->where('id_tipo_contrato', $this->tipoContratoFiltro));
+            }
+
+            if (!empty($this->search)) {
+                $query->where(function ($q) {
+                    $q->where('codigo_empleado', 'like', "%{$this->search}%")
+                      ->orWhereHas('persona', function ($p) {
+                          $p->where('primer_nombre', 'like', "%{$this->search}%")
+                            ->orWhere('primer_apellido', 'like', "%{$this->search}%")
+                            ->orWhere('numero_documento', 'like', "%{$this->search}%");
+                      });
+                });
+            }
+
+            $empleados = $query->orderByDesc('id')->paginate(10);
         }
 
         return view('livewire.empleados.index', [
-            'empleados' => $query->orderByDesc('id')->paginate(10),
-            'departamentos' => Departamento::where('estado', true)->orderBy('nombre')->get(),
+            'empleados' => $empleados,
+            'empleadoDetalle' => $this->viewingId
+                ? Empleado::with(['persona.tipoDocumento', 'cargo', 'area', 'empresa', 'estadoEmpleado', 'contratoVigente.tipoContrato'])->find($this->viewingId)
+                : null,
+            'areas' => Area::where('estado', true)->orderBy('nombre')->get(),
+            'empresas' => Empresa::where('estado', true)->orderBy('nombre')->get(),
+            'empresaActual' => $this->empresaId ? Empresa::find($this->empresaId) : null,
+            'tiposContrato' => Tipo::categoria('tipo_contrato')->activos()->orderBy('orden')->get(),
+            'resumen' => $this->resumenPorContrato(),
             'personasDisponibles' => Persona::where('estado', true)
                 ->where(function ($q) {
                     $q->whereDoesntHave('empleado')
@@ -85,12 +167,32 @@ class LivewireEmpleados extends Component
         ]);
     }
 
+    /**
+     * Empleados activos por tipo del contrato vigente (en la empresa elegida, si hay).
+     *
+     * @return array{total: int, tipos: array<string, int>}
+     */
+    protected function resumenPorContrato(): array
+    {
+        $empleados = Empleado::with('contratoVigente.tipoContrato')
+            ->where('estado', true)
+            ->when($this->empresaId, fn ($q) => $q->where('id_empresa', $this->empresaId))
+            ->get();
+
+        return [
+            'total' => $empleados->count(),
+            'tipos' => $empleados->groupBy(fn ($e) => $e->contratoVigente?->tipoContrato?->nombre ?? 'Sin contrato vigente')
+                ->map->count()->sortKeys()->all(),
+        ];
+    }
+
     public function openModal($id = null)
     {
         if ($id) {
             $this->form->fillForm(Empleado::findOrFail($id));
         } else {
             $this->form->resetForm();
+            $this->form->id_empresa = $this->empresaId ?? '';
             $this->form->codigo_empleado = $this->generarCodigo();
             $estadoActivo = Tipo::categoria('estado_empleado')->where('codigo', 'activo')->first();
             $this->form->id_estado_empleado = $estadoActivo?->id;

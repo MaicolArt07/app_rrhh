@@ -13,6 +13,8 @@ class LivewirePermissions extends Component
 
     public $modalVisible = false;
     public $search = '';
+    public bool $buscado = false;
+    public ?int $viewingId = null;
 
     protected $paginationTheme = 'tailwind';
 
@@ -21,16 +23,53 @@ class LivewirePermissions extends Component
         $this->resetForm();
     }
 
+    public function buscar()
+    {
+        $this->resetPage();
+        $this->buscado = true;
+    }
+
+    public function limpiarFiltros()
+    {
+        $this->reset('search');
+        $this->buscado = false;
+    }
+
+    public function verDetalle($id)
+    {
+        $this->viewingId = $id;
+    }
+
+    public function cerrarDetalle()
+    {
+        $this->viewingId = null;
+    }
+
+    public function editarDesdeDetalle($id)
+    {
+        $this->viewingId = null;
+        $this->openModal($id);
+    }
+
     public function render()
     {
-        $query = Permission::query();
+        $permissions = null;
 
-        if (!empty($this->search)) {
-            $query->where('name', 'like', '%' . $this->search . '%');
+        if ($this->buscado) {
+            $query = Permission::query();
+
+            if (!empty($this->search)) {
+                $query->where('name', 'like', '%' . $this->search . '%');
+            }
+
+            $permissions = $query->orderBy('name')->paginate(5);
         }
 
         return view('livewire.permissions.index', [
-            'permissions' => $query->orderBy('name')->paginate(5),
+            'permissions' => $permissions,
+            'permissionDetalle' => $this->viewingId
+                ? Permission::with('roles')->find($this->viewingId)
+                : null,
         ]);
     }
 

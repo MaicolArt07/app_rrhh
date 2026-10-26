@@ -17,6 +17,8 @@ class LivewireGestiones extends Component
     public $tab = 'gestiones';
     public string $search = '';
     public $modalVisible = false;
+    public bool $buscado = false;
+    public ?int $viewingId = null;
 
     protected $paginationTheme = 'tailwind';
 
@@ -37,20 +39,57 @@ class LivewireGestiones extends Component
 
     public function updatingSearch()
     {
-        $this->resetPage('gestionesPage');
+        $this->resetPage(pageName: 'gestionesPage');
+    }
+
+    public function buscar()
+    {
+        $this->resetPage(pageName: 'gestionesPage');
+        $this->buscado = true;
+    }
+
+    public function limpiarFiltros()
+    {
+        $this->reset('search');
+        $this->buscado = false;
+    }
+
+    public function verDetalle($id)
+    {
+        $this->viewingId = $id;
+    }
+
+    public function cerrarDetalle()
+    {
+        $this->viewingId = null;
+    }
+
+    public function editarDesdeDetalle($id)
+    {
+        $this->viewingId = null;
+        $this->openModal($id);
     }
 
     public function render()
     {
-        $query = Gestion::query();
+        $gestiones = null;
 
-        if (!empty($this->search)) {
-            $query->where('anio', 'like', "%{$this->search}%");
+        if ($this->buscado) {
+            $query = Gestion::query();
+
+            if (!empty($this->search)) {
+                $query->where('anio', 'like', "%{$this->search}%");
+            }
+
+            $gestiones = $query->orderByDesc('anio')->paginate(10, ['*'], 'gestionesPage');
         }
 
         return view('livewire.gestiones.index', [
-            'gestiones' => $query->orderByDesc('anio')->paginate(10, ['*'], 'gestionesPage'),
+            'gestiones' => $gestiones,
             'meses' => Mes::orderBy('numero')->get(),
+            'gestionDetalle' => $this->viewingId
+                ? Gestion::find($this->viewingId)
+                : null,
         ]);
     }
 

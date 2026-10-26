@@ -9,9 +9,12 @@ class EmpleadoForm extends Form
 {
     public $id = null;
     public $id_persona = '';
+    public $id_empresa = '';
     public $codigo_empleado = '';
+    public $codigo_biometrico = '';
+    public $email_corporativo = '';
     public $id_cargo = '';
-    public $id_departamento = '';
+    public $id_area = '';
     public $fecha_ingreso = '';
     public $fecha_baja = '';
     public $sueldo_actual = '';
@@ -28,12 +31,18 @@ class EmpleadoForm extends Form
                 'exists:personas,id',
                 Rule::unique('empleados', 'id_persona')->ignore($this->id),
             ],
+            'form.id_empresa' => 'required|exists:empresas,id',
             'form.codigo_empleado' => [
                 'required', 'string', 'max:20',
                 Rule::unique('empleados', 'codigo_empleado')->ignore($this->id),
             ],
+            'form.codigo_biometrico' => [
+                'nullable', 'string', 'max:20',
+                Rule::unique('empleados', 'codigo_biometrico')->ignore($this->id),
+            ],
+            'form.email_corporativo' => 'nullable|email|max:150',
             'form.id_cargo' => 'required|exists:cargos,id',
-            'form.id_departamento' => 'required|exists:departamentos,id',
+            'form.id_area' => 'required|exists:areas,id',
             'form.fecha_ingreso' => 'required|date',
             'form.fecha_baja' => 'nullable|date|after_or_equal:form.fecha_ingreso',
             'form.sueldo_actual' => 'required|numeric|min:0',
@@ -48,10 +57,12 @@ class EmpleadoForm extends Form
         return [
             'form.id_persona.required' => 'Debe seleccionar una persona.',
             'form.id_persona.unique' => 'Esta persona ya está registrada como empleado.',
+            'form.id_empresa.required' => 'Debe seleccionar la empresa.',
             'form.codigo_empleado.required' => 'El código de empleado es obligatorio.',
             'form.codigo_empleado.unique' => 'Ese código de empleado ya existe.',
+            'form.codigo_biometrico.unique' => 'Ese código biométrico ya está asignado a otro empleado.',
             'form.id_cargo.required' => 'Debe seleccionar un cargo.',
-            'form.id_departamento.required' => 'Debe seleccionar un departamento.',
+            'form.id_area.required' => 'Debe seleccionar un área.',
             'form.fecha_ingreso.required' => 'La fecha de ingreso es obligatoria.',
             'form.fecha_baja.after_or_equal' => 'La fecha de baja debe ser posterior o igual a la fecha de ingreso.',
             'form.sueldo_actual.required' => 'El sueldo actual es obligatorio.',
@@ -63,9 +74,12 @@ class EmpleadoForm extends Form
     {
         $this->id = null;
         $this->id_persona = '';
+        $this->id_empresa = '';
         $this->codigo_empleado = '';
+        $this->codigo_biometrico = '';
+        $this->email_corporativo = '';
         $this->id_cargo = '';
-        $this->id_departamento = '';
+        $this->id_area = '';
         $this->fecha_ingreso = '';
         $this->fecha_baja = '';
         $this->sueldo_actual = '';
@@ -79,9 +93,12 @@ class EmpleadoForm extends Form
     {
         $this->id = $empleado->id;
         $this->id_persona = $empleado->id_persona;
+        $this->id_empresa = $empleado->id_empresa;
         $this->codigo_empleado = $empleado->codigo_empleado;
+        $this->codigo_biometrico = $empleado->codigo_biometrico;
+        $this->email_corporativo = $empleado->email_corporativo;
         $this->id_cargo = $empleado->id_cargo;
-        $this->id_departamento = $empleado->id_departamento;
+        $this->id_area = $empleado->id_area;
         $this->fecha_ingreso = $empleado->fecha_ingreso?->format('Y-m-d');
         $this->fecha_baja = $empleado->fecha_baja?->format('Y-m-d');
         $this->sueldo_actual = $empleado->sueldo_actual;

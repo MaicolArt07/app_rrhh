@@ -22,6 +22,19 @@ yarn-error.log
 /.vscode
 /.zed
 
-# Backups / dumps locales (no deben ir al repo)
+# Backups / dumps / zips locales (no deben ir al repo)
 /app_rrhh.zip
+/vendor.zip
 /bd_rrhh_app.sql
+/storage/backups
+/storage/fonts
+.env.produccion
+
+# Datos reales / reportes locales (no deben ir al repo)
+/contratos
+/informe-datos
+/1_report.xls
+/VERD REPORTE MACRO DE ASISTENCIA.xlsm
+
+# Scripts de prueba sueltos
+/check_cargos.js

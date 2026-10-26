@@ -53,8 +53,8 @@
         <flux:sidebar
             sticky
             stashable
-            class="border-e border-zinc-200 bg-zinc-50 px-3 py-3 dark:border-zinc-800 dark:bg-zinc-900 lg:transition-[width] lg:duration-200 lg:ease-linear lg:overflow-x-hidden"
-            x-bind:class="sidebarIsCollapsed ? 'lg:w-20' : 'lg:w-64'"
+            class="border-e border-zinc-200 bg-zinc-50 px-4 py-4 dark:border-zinc-800 dark:bg-zinc-900 lg:transition-[width] lg:duration-200 lg:ease-linear lg:overflow-x-hidden"
+            x-bind:class="sidebarIsCollapsed ? 'lg:w-20' : 'lg:w-72'"
             x-bind:data-sidebar-collapsed="sidebarIsCollapsed"
             x-on:mouseenter="sidebarCollapsed && (sidebarHovering = true)"
             x-on:mouseleave="sidebarHovering = false"
@@ -67,10 +67,11 @@
             <div class="me-5 flex items-center justify-center gap-1">
                 <a
                     href="{{ route('home') }}"
-                    class="sidebar-logo-full flex min-w-0 items-center gap-2 rounded-xl px-2 py-2 transition hover:bg-black/10"
+                    class="sidebar-logo-full flex min-w-0 items-center gap-2 rounded-xl px-2 py-2 transition hover:bg-zinc-100 dark:hover:bg-zinc-800"
                     wire:navigate
                 >
-                    <img src="{{ asset('img/deltax-logo-white.png') }}" alt="DeltaX" class="h-8 w-auto">
+                    <img src="{{ asset('img/deltax-logo.png') }}" alt="DeltaX" class="h-8 w-auto dark:hidden">
+                    <img src="{{ asset('img/deltax-logo-white.png') }}" alt="DeltaX" class="hidden h-8 w-auto dark:block">
                 </a>
 
                 <button
@@ -85,7 +86,8 @@
                 </button>
 
                 <span class="sidebar-logo-mark hidden">
-                    <img src="{{ asset('img/deltax-icon-white.png') }}" alt="DeltaX" class="h-7 w-auto">
+                    <img src="{{ asset('img/deltax-icon.png') }}" alt="DeltaX" class="h-7 w-auto dark:hidden">
+                    <img src="{{ asset('img/deltax-icon-white.png') }}" alt="DeltaX" class="hidden h-7 w-auto dark:block">
                 </span>
             </div>
 
@@ -106,16 +108,17 @@
                 </flux:navlist.group>
 
                 <!-- ✅ GESTIÓN DE PERSONAL -->
-                @canany(['Ver Personas', 'Ver Empleados', 'Ver Cargos', 'Ver Departamentos', 'Ver Contratos', 'Ver Documentos'])
+                @canany(['Ver Personas', 'Ver Empleados', 'Ver Cargos', 'Ver Áreas', 'Ver Empresas', 'Ver Contratos', 'Ver Documentos'])
                 <flux:navlist.group :heading="__('Gestión de Personal')" class="grid mt-3">
                     @php
                         $isStaffSection = request()->routeIs('personas*') || request()->routeIs('empleados*')
-                            || request()->routeIs('cargos*') || request()->routeIs('departamentos*')
+                            || request()->routeIs('personal.*') || request()->routeIs('empresas*')
+                            || request()->routeIs('cargos*') || request()->routeIs('areas*')
                             || request()->routeIs('contratos*') || request()->routeIs('documentos*');
                     @endphp
 
                     <details class="group" @if($isStaffSection) open @endif>
-                        <summary class="flex items-center cursor-pointer rounded-xl px-3 py-2.5 transition hover:bg-zinc-200 dark:hover:bg-zinc-800 {{ $isStaffSection ? 'bg-zinc-200 font-semibold text-zinc-900 dark:bg-zinc-800 dark:text-white' : 'text-zinc-700 dark:text-zinc-200' }}">
+                        <summary class="flex items-center cursor-pointer rounded-xl px-3 py-2.5 text-sm transition hover:bg-zinc-200 dark:hover:bg-zinc-800 {{ $isStaffSection ? 'bg-zinc-200 font-medium text-zinc-900 dark:bg-zinc-800 dark:text-white' : 'text-zinc-700 dark:text-zinc-200' }}">
                             <i class="bi bi-person-vcard-fill me-2"></i>
                             <span class="sidebar-label">{{ __('Gestión de Personal') }}</span>
                             <i class="bi bi-chevron-down ms-auto transition-transform duration-200 group-open:rotate-180 sidebar-label"></i>
@@ -127,7 +130,7 @@
                                 :href="route('personas')"
                                 :current="request()->routeIs('personas*')"
                                 wire:navigate
-                                class="{{ request()->routeIs('personas*') ? 'bg-zinc-200 dark:bg-zinc-800 font-semibold rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
+                                class="{{ request()->routeIs('personas*') ? 'bg-zinc-200 dark:bg-zinc-800 font-medium rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
                             >
                                 <i class="bi bi-person-badge-fill me-2"></i> {{ __('Personas') }}
                             </flux:navlist.item>
@@ -138,9 +141,20 @@
                                 :href="route('empleados')"
                                 :current="request()->routeIs('empleados*')"
                                 wire:navigate
-                                class="{{ request()->routeIs('empleados*') ? 'bg-zinc-200 dark:bg-zinc-800 font-semibold rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
+                                class="{{ request()->routeIs('empleados*') ? 'bg-zinc-200 dark:bg-zinc-800 font-medium rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
                             >
                                 <i class="bi bi-person-workspace me-2"></i> {{ __('Empleados') }}
+                            </flux:navlist.item>
+                            @endcan
+
+                            @can('Ver Empresas')
+                            <flux:navlist.item
+                                :href="route('empresas')"
+                                :current="request()->routeIs('empresas*')"
+                                wire:navigate
+                                class="{{ request()->routeIs('empresas*') ? 'bg-zinc-200 dark:bg-zinc-800 font-medium rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
+                            >
+                                <i class="bi bi-buildings-fill me-2"></i> {{ __('Empresas') }}
                             </flux:navlist.item>
                             @endcan
 
@@ -149,20 +163,20 @@
                                 :href="route('cargos')"
                                 :current="request()->routeIs('cargos*')"
                                 wire:navigate
-                                class="{{ request()->routeIs('cargos*') ? 'bg-zinc-200 dark:bg-zinc-800 font-semibold rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
+                                class="{{ request()->routeIs('cargos*') ? 'bg-zinc-200 dark:bg-zinc-800 font-medium rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
                             >
                                 <i class="bi bi-briefcase-fill me-2"></i> {{ __('Cargos') }}
                             </flux:navlist.item>
                             @endcan
 
-                            @can('Ver Departamentos')
+                            @can('Ver Áreas')
                             <flux:navlist.item
-                                :href="route('departamentos')"
-                                :current="request()->routeIs('departamentos*')"
+                                :href="route('areas')"
+                                :current="request()->routeIs('areas*')"
                                 wire:navigate
-                                class="{{ request()->routeIs('departamentos*') ? 'bg-zinc-200 dark:bg-zinc-800 font-semibold rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
+                                class="{{ request()->routeIs('areas*') ? 'bg-zinc-200 dark:bg-zinc-800 font-medium rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
                             >
-                                <i class="bi bi-diagram-3-fill me-2"></i> {{ __('Departamentos') }}
+                                <i class="bi bi-diagram-3-fill me-2"></i> {{ __('Áreas') }}
                             </flux:navlist.item>
                             @endcan
 
@@ -171,7 +185,7 @@
                                 :href="route('contratos')"
                                 :current="request()->routeIs('contratos*')"
                                 wire:navigate
-                                class="{{ request()->routeIs('contratos*') ? 'bg-zinc-200 dark:bg-zinc-800 font-semibold rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
+                                class="{{ request()->routeIs('contratos*') ? 'bg-zinc-200 dark:bg-zinc-800 font-medium rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
                             >
                                 <i class="bi bi-file-earmark-text-fill me-2"></i> {{ __('Contratos') }}
                             </flux:navlist.item>
@@ -182,7 +196,7 @@
                                 :href="route('documentos')"
                                 :current="request()->routeIs('documentos*')"
                                 wire:navigate
-                                class="{{ request()->routeIs('documentos*') ? 'bg-zinc-200 dark:bg-zinc-800 font-semibold rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
+                                class="{{ request()->routeIs('documentos*') ? 'bg-zinc-200 dark:bg-zinc-800 font-medium rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
                             >
                                 <i class="bi bi-folder-fill me-2"></i> {{ __('Documentos') }}
                             </flux:navlist.item>
@@ -202,7 +216,7 @@
                     @endphp
 
                     <details class="group" @if($isAttendanceSection) open @endif>
-                        <summary class="flex items-center cursor-pointer rounded-xl px-3 py-2.5 transition hover:bg-zinc-200 dark:hover:bg-zinc-800 {{ $isAttendanceSection ? 'bg-zinc-200 font-semibold text-zinc-900 dark:bg-zinc-800 dark:text-white' : 'text-zinc-700 dark:text-zinc-200' }}">
+                        <summary class="flex items-center cursor-pointer rounded-xl px-3 py-2.5 text-sm transition hover:bg-zinc-200 dark:hover:bg-zinc-800 {{ $isAttendanceSection ? 'bg-zinc-200 font-medium text-zinc-900 dark:bg-zinc-800 dark:text-white' : 'text-zinc-700 dark:text-zinc-200' }}">
                             <i class="bi bi-clock-fill me-2"></i>
                             <span class="sidebar-label">{{ __('Asistencia') }}</span>
                             <i class="bi bi-chevron-down ms-auto transition-transform duration-200 group-open:rotate-180 sidebar-label"></i>
@@ -210,10 +224,52 @@
 
                         <div class="sidebar-label ml-5 mt-2 space-y-1 border-l border-zinc-200 pl-3 dark:border-zinc-700">
                             <flux:navlist.item
-                                :href="route('asistencia')"
-                                :current="request()->routeIs('asistencia*')"
+                                :href="route('asistencia.matriz')"
+                                :current="request()->routeIs('asistencia.matriz')"
                                 wire:navigate
-                                class="{{ request()->routeIs('asistencia*') ? 'bg-zinc-200 dark:bg-zinc-800 font-semibold rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
+                                class="{{ request()->routeIs('asistencia.matriz') ? 'bg-zinc-200 dark:bg-zinc-800 font-medium rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
+                            >
+                                <i class="bi bi-grid-3x3-gap-fill me-2"></i> {{ __('Matriz de Asistencia') }}
+                            </flux:navlist.item>
+
+                            @can('Importar Asistencia')
+                            <flux:navlist.item
+                                :href="route('asistencia.importar')"
+                                :current="request()->routeIs('asistencia.importar')"
+                                wire:navigate
+                                class="{{ request()->routeIs('asistencia.importar') ? 'bg-zinc-200 dark:bg-zinc-800 font-medium rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
+                            >
+                                <i class="bi bi-upload me-2"></i> {{ __('Importar Biométrico') }}
+                            </flux:navlist.item>
+                            @endcan
+
+                            @can('Asignar Dias Remotos')
+                            <flux:navlist.item
+                                :href="route('asistencia.dias-remotos')"
+                                :current="request()->routeIs('asistencia.dias-remotos')"
+                                wire:navigate
+                                class="{{ request()->routeIs('asistencia.dias-remotos') ? 'bg-zinc-200 dark:bg-zinc-800 font-medium rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
+                            >
+                                <i class="bi bi-house-door-fill me-2"></i> {{ __('Días Remotos') }}
+                            </flux:navlist.item>
+                            @endcan
+
+                            @can('Editar Matriz Asistencia')
+                            <flux:navlist.item
+                                :href="route('asistencia.tipos')"
+                                :current="request()->routeIs('asistencia.tipos')"
+                                wire:navigate
+                                class="{{ request()->routeIs('asistencia.tipos') ? 'bg-zinc-200 dark:bg-zinc-800 font-medium rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
+                            >
+                                <i class="bi bi-palette-fill me-2"></i> {{ __('Tipos de Asistencia') }}
+                            </flux:navlist.item>
+                            @endcan
+
+                            <flux:navlist.item
+                                :href="route('asistencia')"
+                                :current="request()->routeIs('asistencia')"
+                                wire:navigate
+                                class="{{ request()->routeIs('asistencia') ? 'bg-zinc-200 dark:bg-zinc-800 font-medium rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
                             >
                                 <i class="bi bi-calendar-check-fill me-2"></i> {{ __('Marcajes') }}
                             </flux:navlist.item>
@@ -222,7 +278,7 @@
                                 :href="route('permisos-laborales')"
                                 :current="request()->routeIs('permisos-laborales*')"
                                 wire:navigate
-                                class="{{ request()->routeIs('permisos-laborales*') ? 'bg-zinc-200 dark:bg-zinc-800 font-semibold rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
+                                class="{{ request()->routeIs('permisos-laborales*') ? 'bg-zinc-200 dark:bg-zinc-800 font-medium rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
                             >
                                 <i class="bi bi-envelope-paper-fill me-2"></i> {{ __('Permisos') }}
                             </flux:navlist.item>
@@ -231,7 +287,7 @@
                                 :href="route('turnos')"
                                 :current="request()->routeIs('turnos*')"
                                 wire:navigate
-                                class="{{ request()->routeIs('turnos*') ? 'bg-zinc-200 dark:bg-zinc-800 font-semibold rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
+                                class="{{ request()->routeIs('turnos*') ? 'bg-zinc-200 dark:bg-zinc-800 font-medium rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
                             >
                                 <i class="bi bi-hourglass-split me-2"></i> {{ __('Turnos') }}
                             </flux:navlist.item>
@@ -240,7 +296,7 @@
                                 :href="route('feriados')"
                                 :current="request()->routeIs('feriados*')"
                                 wire:navigate
-                                class="{{ request()->routeIs('feriados*') ? 'bg-zinc-200 dark:bg-zinc-800 font-semibold rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
+                                class="{{ request()->routeIs('feriados*') ? 'bg-zinc-200 dark:bg-zinc-800 font-medium rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
                             >
                                 <i class="bi bi-flag-fill me-2"></i> {{ __('Feriados') }}
                             </flux:navlist.item>
@@ -250,7 +306,7 @@
                                 :href="route('vacaciones')"
                                 :current="request()->routeIs('vacaciones*')"
                                 wire:navigate
-                                class="{{ request()->routeIs('vacaciones*') ? 'bg-zinc-200 dark:bg-zinc-800 font-semibold rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
+                                class="{{ request()->routeIs('vacaciones*') ? 'bg-zinc-200 dark:bg-zinc-800 font-medium rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
                             >
                                 <i class="bi bi-airplane-fill me-2"></i> {{ __('Vacaciones') }}
                             </flux:navlist.item>
@@ -261,7 +317,7 @@
                                 :href="route('horas-extra')"
                                 :current="request()->routeIs('horas-extra*')"
                                 wire:navigate
-                                class="{{ request()->routeIs('horas-extra*') ? 'bg-zinc-200 dark:bg-zinc-800 font-semibold rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
+                                class="{{ request()->routeIs('horas-extra*') ? 'bg-zinc-200 dark:bg-zinc-800 font-medium rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
                             >
                                 <i class="bi bi-clock-history me-2"></i> {{ __('Horas Extra') }}
                             </flux:navlist.item>
@@ -280,7 +336,7 @@
                     @endphp
 
                     <details class="group" @if($isPayrollSection) open @endif>
-                        <summary class="flex items-center cursor-pointer rounded-xl px-3 py-2.5 transition hover:bg-zinc-200 dark:hover:bg-zinc-800 {{ $isPayrollSection ? 'bg-zinc-200 font-semibold text-zinc-900 dark:bg-zinc-800 dark:text-white' : 'text-zinc-700 dark:text-zinc-200' }}">
+                        <summary class="flex items-center cursor-pointer rounded-xl px-3 py-2.5 text-sm transition hover:bg-zinc-200 dark:hover:bg-zinc-800 {{ $isPayrollSection ? 'bg-zinc-200 font-medium text-zinc-900 dark:bg-zinc-800 dark:text-white' : 'text-zinc-700 dark:text-zinc-200' }}">
                             <i class="bi bi-cash-stack me-2"></i>
                             <span class="sidebar-label">{{ __('Planillas') }}</span>
                             <i class="bi bi-chevron-down ms-auto transition-transform duration-200 group-open:rotate-180 sidebar-label"></i>
@@ -291,7 +347,7 @@
                                 :href="route('planillas')"
                                 :current="request()->routeIs('planillas*')"
                                 wire:navigate
-                                class="{{ request()->routeIs('planillas*') ? 'bg-zinc-200 dark:bg-zinc-800 font-semibold rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
+                                class="{{ request()->routeIs('planillas*') ? 'bg-zinc-200 dark:bg-zinc-800 font-medium rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
                             >
                                 <i class="bi bi-receipt me-2"></i> {{ __('Planillas') }}
                             </flux:navlist.item>
@@ -300,7 +356,7 @@
                                 :href="route('conceptos-pago')"
                                 :current="request()->routeIs('conceptos-pago*')"
                                 wire:navigate
-                                class="{{ request()->routeIs('conceptos-pago*') ? 'bg-zinc-200 dark:bg-zinc-800 font-semibold rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
+                                class="{{ request()->routeIs('conceptos-pago*') ? 'bg-zinc-200 dark:bg-zinc-800 font-medium rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
                             >
                                 <i class="bi bi-list-check me-2"></i> {{ __('Conceptos de Pago') }}
                             </flux:navlist.item>
@@ -310,7 +366,7 @@
                                 :href="route('anticipos')"
                                 :current="request()->routeIs('anticipos*')"
                                 wire:navigate
-                                class="{{ request()->routeIs('anticipos*') ? 'bg-zinc-200 dark:bg-zinc-800 font-semibold rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
+                                class="{{ request()->routeIs('anticipos*') ? 'bg-zinc-200 dark:bg-zinc-800 font-medium rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
                             >
                                 <i class="bi bi-piggy-bank-fill me-2"></i> {{ __('Anticipos y Préstamos') }}
                             </flux:navlist.item>
@@ -321,7 +377,7 @@
                                 :href="route('liquidaciones')"
                                 :current="request()->routeIs('liquidaciones*')"
                                 wire:navigate
-                                class="{{ request()->routeIs('liquidaciones*') ? 'bg-zinc-200 dark:bg-zinc-800 font-semibold rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
+                                class="{{ request()->routeIs('liquidaciones*') ? 'bg-zinc-200 dark:bg-zinc-800 font-medium rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
                             >
                                 <i class="bi bi-door-open-fill me-2"></i> {{ __('Liquidaciones') }}
                             </flux:navlist.item>
@@ -393,7 +449,7 @@
                     @endphp
 
                     <details class="group" @if($isCatalogSection) open @endif>
-                        <summary class="flex items-center cursor-pointer rounded-xl px-3 py-2.5 transition hover:bg-zinc-200 dark:hover:bg-zinc-800 {{ $isCatalogSection ? 'bg-zinc-200 font-semibold text-zinc-900 dark:bg-zinc-800 dark:text-white' : 'text-zinc-700 dark:text-zinc-200' }}">
+                        <summary class="flex items-center cursor-pointer rounded-xl px-3 py-2.5 text-sm transition hover:bg-zinc-200 dark:hover:bg-zinc-800 {{ $isCatalogSection ? 'bg-zinc-200 font-medium text-zinc-900 dark:bg-zinc-800 dark:text-white' : 'text-zinc-700 dark:text-zinc-200' }}">
                             <i class="bi bi-collection-fill me-2"></i>
                             <span class="sidebar-label">{{ __('Catálogos') }}</span>
                             <i class="bi bi-chevron-down ms-auto transition-transform duration-200 group-open:rotate-180 sidebar-label"></i>
@@ -405,7 +461,7 @@
                                 :href="route('tipos')"
                                 :current="request()->routeIs('tipos*')"
                                 wire:navigate
-                                class="{{ request()->routeIs('tipos*') ? 'bg-zinc-200 dark:bg-zinc-800 font-semibold rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
+                                class="{{ request()->routeIs('tipos*') ? 'bg-zinc-200 dark:bg-zinc-800 font-medium rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
                             >
                                 <i class="bi bi-tags-fill me-2"></i> {{ __('Tipos') }}
                             </flux:navlist.item>
@@ -416,7 +472,7 @@
                                 :href="route('gestiones')"
                                 :current="request()->routeIs('gestiones*')"
                                 wire:navigate
-                                class="{{ request()->routeIs('gestiones*') ? 'bg-zinc-200 dark:bg-zinc-800 font-semibold rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
+                                class="{{ request()->routeIs('gestiones*') ? 'bg-zinc-200 dark:bg-zinc-800 font-medium rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
                             >
                                 <i class="bi bi-calendar-range-fill me-2"></i> {{ __('Gestiones y Meses') }}
                             </flux:navlist.item>
@@ -436,7 +492,7 @@
                     @endphp
 
                     <details class="group" @if($isUserSection) open @endif>
-                        <summary class="flex items-center cursor-pointer rounded-xl px-3 py-2.5 transition hover:bg-zinc-200 dark:hover:bg-zinc-800 {{ $isUserSection ? 'bg-zinc-200 font-semibold text-zinc-900 dark:bg-zinc-800 dark:text-white' : 'text-zinc-700 dark:text-zinc-200' }}">
+                        <summary class="flex items-center cursor-pointer rounded-xl px-3 py-2.5 text-sm transition hover:bg-zinc-200 dark:hover:bg-zinc-800 {{ $isUserSection ? 'bg-zinc-200 font-medium text-zinc-900 dark:bg-zinc-800 dark:text-white' : 'text-zinc-700 dark:text-zinc-200' }}">
                             <i class="bi bi-people-fill me-2"></i>
                             <span class="sidebar-label">{{ __('Usuarios') }}</span>
                             <i class="bi bi-chevron-down ms-auto transition-transform duration-200 group-open:rotate-180 sidebar-label"></i>
@@ -448,7 +504,7 @@
                                 :href="route('users')"
                                 :current="request()->routeIs('users*')"
                                 wire:navigate
-                                class="{{ request()->routeIs('users*') ? 'bg-zinc-200 dark:bg-zinc-800 font-semibold rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
+                                class="{{ request()->routeIs('users*') ? 'bg-zinc-200 dark:bg-zinc-800 font-medium rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
                             >
                                 <i class="bi bi-person-lines-fill me-2"></i> {{ __('Lista de Usuarios') }}
                             </flux:navlist.item>
@@ -459,7 +515,7 @@
                                 :href="route('roles')"
                                 :current="request()->routeIs('roles*')"
                                 wire:navigate
-                                class="{{ request()->routeIs('roles*') ? 'bg-zinc-200 dark:bg-zinc-800 font-semibold rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
+                                class="{{ request()->routeIs('roles*') ? 'bg-zinc-200 dark:bg-zinc-800 font-medium rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
                             >
                                 <i class="bi bi-person-gear me-2"></i> {{ __('Roles') }}
                             </flux:navlist.item>
@@ -470,7 +526,7 @@
                                 :href="route('permissions')"
                                 :current="request()->routeIs('permissions*')"
                                 wire:navigate
-                                class="{{ request()->routeIs('permissions*') ? 'bg-zinc-200 dark:bg-zinc-800 font-semibold rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
+                                class="{{ request()->routeIs('permissions*') ? 'bg-zinc-200 dark:bg-zinc-800 font-medium rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
                             >
                                 <i class="bi bi-shield-lock-fill me-2"></i> {{ __('Permisos') }}
                             </flux:navlist.item>
@@ -481,7 +537,7 @@
                                 :href="route('configuracion')"
                                 :current="request()->routeIs('configuracion*')"
                                 wire:navigate
-                                class="{{ request()->routeIs('configuracion*') ? 'bg-zinc-200 dark:bg-zinc-800 font-semibold rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
+                                class="{{ request()->routeIs('configuracion*') ? 'bg-zinc-200 dark:bg-zinc-800 font-medium rounded-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' }}"
                             >
                                 <i class="bi bi-gear-fill me-2"></i> {{ __('Configuración') }}
                             </flux:navlist.item>

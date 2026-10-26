@@ -21,7 +21,7 @@ class LivewireReportes extends Component
     public function render()
     {
         return view('livewire.reportes.index', [
-            'empleados' => Empleado::with(['persona', 'cargo', 'departamento'])->where('estado', true)->orderBy('codigo_empleado')->get(),
+            'empleados' => Empleado::with(['persona', 'cargo', 'area'])->where('estado', true)->orderBy('codigo_empleado')->get(),
             'planillas' => Planilla::with(['gestion', 'mes', 'tipoPlanilla', 'estadoPlanilla'])->orderByDesc('id')->limit(20)->get(),
         ]);
     }

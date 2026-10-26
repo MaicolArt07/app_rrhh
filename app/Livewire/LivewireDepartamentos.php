@@ -15,6 +15,8 @@ class LivewireDepartamentos extends Component
 
     public $search = '';
     public $modalVisible = false;
+    public bool $buscado = false;
+    public ?int $viewingId = null;
 
     protected $paginationTheme = 'tailwind';
 
@@ -28,16 +30,53 @@ class LivewireDepartamentos extends Component
         $this->resetPage();
     }
 
+    public function buscar()
+    {
+        $this->resetPage();
+        $this->buscado = true;
+    }
+
+    public function limpiarFiltros()
+    {
+        $this->reset('search');
+        $this->buscado = false;
+    }
+
+    public function verDetalle($id)
+    {
+        $this->viewingId = $id;
+    }
+
+    public function cerrarDetalle()
+    {
+        $this->viewingId = null;
+    }
+
+    public function editarDesdeDetalle($id)
+    {
+        $this->viewingId = null;
+        $this->openModal($id);
+    }
+
     public function render()
     {
-        $query = Departamento::query();
+        $departamentos = null;
 
-        if (!empty($this->search)) {
-            $query->where('nombre', 'like', "%{$this->search}%");
+        if ($this->buscado) {
+            $query = Departamento::query();
+
+            if (!empty($this->search)) {
+                $query->where('nombre', 'like', "%{$this->search}%");
+            }
+
+            $departamentos = $query->withCount('cargos', 'empleados')->orderBy('nombre')->paginate(10);
         }
 
         return view('livewire.departamentos.index', [
-            'departamentos' => $query->withCount('cargos', 'empleados')->orderBy('nombre')->paginate(10),
+            'departamentos' => $departamentos,
+            'departamentoDetalle' => $this->viewingId
+                ? Departamento::withCount('cargos', 'empleados')->find($this->viewingId)
+                : null,
         ]);
     }
 

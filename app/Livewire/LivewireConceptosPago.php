@@ -15,6 +15,8 @@ class LivewireConceptosPago extends Component
 
     public string $search = '';
     public $modalVisible = false;
+    public bool $buscado = false;
+    public ?int $viewingId = null;
 
     protected $paginationTheme = 'tailwind';
 
@@ -28,16 +30,53 @@ class LivewireConceptosPago extends Component
         $this->resetPage();
     }
 
+    public function buscar()
+    {
+        $this->resetPage();
+        $this->buscado = true;
+    }
+
+    public function limpiarFiltros()
+    {
+        $this->reset('search');
+        $this->buscado = false;
+    }
+
+    public function verDetalle($id)
+    {
+        $this->viewingId = $id;
+    }
+
+    public function cerrarDetalle()
+    {
+        $this->viewingId = null;
+    }
+
+    public function editarDesdeDetalle($id)
+    {
+        $this->viewingId = null;
+        $this->openModal($id);
+    }
+
     public function render()
     {
-        $query = ConceptoPago::query();
+        $conceptos = null;
 
-        if (!empty($this->search)) {
-            $query->where('nombre', 'like', "%{$this->search}%");
+        if ($this->buscado) {
+            $query = ConceptoPago::query();
+
+            if (!empty($this->search)) {
+                $query->where('nombre', 'like', "%{$this->search}%");
+            }
+
+            $conceptos = $query->orderBy('tipo_concepto')->orderBy('nombre')->paginate(10);
         }
 
         return view('livewire.conceptos-pago.index', [
-            'conceptos' => $query->orderBy('tipo_concepto')->orderBy('nombre')->paginate(10),
+            'conceptos' => $conceptos,
+            'conceptoDetalle' => $this->viewingId
+                ? ConceptoPago::withCount('planillaDetalleConceptos')->find($this->viewingId)
+                : null,
         ]);
     }
 

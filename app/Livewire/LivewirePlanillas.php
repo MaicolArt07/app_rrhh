@@ -15,7 +15,7 @@ class LivewirePlanillas extends Component
     use WithPagination;
 
     public $modalVisible = false;
-    public $verDetalleId = null;
+    public ?int $viewingId = null;
 
     public $id_gestion = '';
     public $id_mes = '';
@@ -24,6 +24,7 @@ class LivewirePlanillas extends Component
     public $fecha_fin = '';
 
     public string $search = '';
+    public bool $buscado = false;
 
     protected $paginationTheme = 'tailwind';
 
@@ -32,26 +33,53 @@ class LivewirePlanillas extends Component
         $this->resetPage();
     }
 
+    public function buscar()
+    {
+        $this->resetPage();
+        $this->buscado = true;
+    }
+
+    public function limpiarFiltros()
+    {
+        $this->reset('search');
+        $this->buscado = false;
+    }
+
     public function render()
     {
-        $query = Planilla::with(['gestion', 'mes', 'tipoPlanilla', 'estadoPlanilla', 'generadoPor']);
+        $planillas = null;
 
-        if (!empty($this->search)) {
-            $query->where(function ($q) {
-                $q->whereHas('gestion', fn ($g) => $g->where('anio', 'like', "%{$this->search}%"))
-                    ->orWhereHas('mes', fn ($m) => $m->where('nombre', 'like', "%{$this->search}%"))
-                    ->orWhereHas('tipoPlanilla', fn ($t) => $t->where('nombre', 'like', "%{$this->search}%"));
-            });
+        if ($this->buscado) {
+            $query = Planilla::with(['gestion', 'mes', 'tipoPlanilla', 'estadoPlanilla', 'generadoPor']);
+
+            if (!empty($this->search)) {
+                $query->where(function ($q) {
+                    $q->whereHas('gestion', fn ($g) => $g->where('anio', 'like', "%{$this->search}%"))
+                        ->orWhereHas('mes', fn ($m) => $m->where('nombre', 'like', "%{$this->search}%"))
+                        ->orWhereHas('tipoPlanilla', fn ($t) => $t->where('nombre', 'like', "%{$this->search}%"));
+                });
+            }
+
+            $planillas = $query->orderByDesc('id')->paginate(10);
         }
 
         return view('livewire.planillas.index', [
-            'planillas' => $query->orderByDesc('id')->paginate(10),
+            'planillas' => $planillas,
             'gestiones' => Gestion::orderByDesc('anio')->get(),
             'meses' => Mes::orderBy('numero')->get(),
             'tiposPlanilla' => Tipo::categoria('tipo_planilla')->activos()->orderBy('orden')->get(),
-            'detallePlanilla' => $this->verDetalleId
-                ? Planilla::with(['detalles.empleado.persona', 'detalles.cargo', 'detalles.conceptos.conceptoPago', 'estadoPlanilla'])
-                    ->find($this->verDetalleId)
+            'planillaDetalle' => $this->viewingId
+                ? Planilla::with([
+                    'gestion',
+                    'mes',
+                    'tipoPlanilla',
+                    'estadoPlanilla',
+                    'generadoPor',
+                    'aprobadoPor',
+                    'detalles.empleado.persona',
+                    'detalles.cargo',
+                    'detalles.conceptos.conceptoPago',
+                ])->find($this->viewingId)
                 : null,
         ]);
     }
@@ -89,7 +117,7 @@ class LivewirePlanillas extends Component
 
             $this->dispatch('toast', type: 'success', message: 'Planilla generada con ' . $planilla->detalles->count() . ' empleados.');
             $this->modalVisible = false;
-            $this->verDetalleId = $planilla->id;
+            $this->viewingId = $planilla->id;
         } catch (\Throwable $e) {
             $this->dispatch('toast', type: 'error', message: 'No se pudo generar la planilla: ' . $e->getMessage());
         }
@@ -97,12 +125,12 @@ class LivewirePlanillas extends Component
 
     public function verDetalle($id)
     {
-        $this->verDetalleId = $id;
+        $this->viewingId = $id;
     }
 
     public function cerrarDetalle()
     {
-        $this->verDetalleId = null;
+        $this->viewingId = null;
     }
 
     public function avanzarEstado($id, $codigoEstado)

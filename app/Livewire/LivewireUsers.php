@@ -24,6 +24,8 @@ class LivewireUsers extends Component
     public $roles = [];
     public $modalVisible = false;
     public string $search = '';
+    public bool $buscado = false;
+    public ?int $viewingId = null;
 
     public function mount()
     {
@@ -38,19 +40,56 @@ class LivewireUsers extends Component
         $this->resetPage();
     }
 
+    public function buscar()
+    {
+        $this->resetPage();
+        $this->buscado = true;
+    }
+
+    public function limpiarFiltros()
+    {
+        $this->reset('search');
+        $this->buscado = false;
+    }
+
+    public function verDetalle($id)
+    {
+        $this->viewingId = $id;
+    }
+
+    public function cerrarDetalle()
+    {
+        $this->viewingId = null;
+    }
+
+    public function editarDesdeDetalle($id)
+    {
+        $this->viewingId = null;
+        $this->openModal($id);
+    }
+
     public function render()
     {
-        $query = User::with('roles');
+        $users = null;
 
-        if (!empty($this->search)) {
-            $query->where(function ($q) {
-                $q->where('name', 'like', "%{$this->search}%")
-                    ->orWhere('email', 'like', "%{$this->search}%");
-            });
+        if ($this->buscado) {
+            $query = User::with('roles');
+
+            if (!empty($this->search)) {
+                $query->where(function ($q) {
+                    $q->where('name', 'like', "%{$this->search}%")
+                        ->orWhere('email', 'like', "%{$this->search}%");
+                });
+            }
+
+            $users = $query->paginate(10);
         }
 
         return view('livewire.users.index', [
-            'users' => $query->paginate(10),
+            'users' => $users,
+            'userDetalle' => $this->viewingId
+                ? User::with(['roles', 'permissions', 'persona'])->find($this->viewingId)
+                : null,
         ]);
     }
 

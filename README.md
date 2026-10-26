@@ -57,7 +57,7 @@ app/
 │   ├── Empleado.php
 │   ├── User.php
 │   ├── Cargo.php
-│   ├── Departamento.php
+│   ├── Area.php
 │   ├── Contrato.php
 │   ├── DocumentoEmpleado.php
 │   ├── Asistencia.php
@@ -187,11 +187,11 @@ Para no repetir strings de periodo (`"2026-08"`) ni años sueltos en cada tabla,
 
 ### 4.2 Módulo de Empleados y Cargos
 
-**`departamentos`**: id, nombre, descripcion.
+**`areas`**: id, nombre, descripcion.
 
-**`cargos`**: id, id_departamento, nombre, sueldo_base, descripcion_funciones.
+**`cargos`**: id, id_area, nombre, sueldo_base, descripcion_funciones.
 
-**`empleados`**: id, id_persona, codigo_empleado, id_cargo, id_departamento, fecha_ingreso, fecha_baja, sueldo_actual, id_estado_empleado *(FK tipos)*, numero_cuenta_bancaria, banco, soft deletes.
+**`empleados`**: id, id_persona, codigo_empleado, id_cargo, id_area, fecha_ingreso, fecha_baja, sueldo_actual, id_estado_empleado *(FK tipos)*, numero_cuenta_bancaria, banco, soft deletes.
 
 **`historial_cargos`**: id, id_empleado, id_cargo_anterior, id_cargo_nuevo, sueldo_anterior, sueldo_nuevo, fecha_cambio, motivo.
 
@@ -363,7 +363,7 @@ Tabla `activity_log` automática — registra creación/edición/eliminación en
 ## 5. Módulos del Sistema (por secciones)
 
 1. **Personas** — datos generales, base de empleados y usuarios.
-2. **Empleados y Cargos** — CRUD, departamentos, cargos, historial de cargos.
+2. **Empleados y Cargos** — CRUD, áreas, cargos, historial de cargos.
 3. **Contratos** — alta, renovación y alertas de vencimiento.
 4. **Documentos de Empleado** — carga y alertas de vencimiento.
 5. **Asistencia** — marcaje, turnos, feriados, permisos/vacaciones (solicitud), enlazado a `gestiones`/`meses`.
@@ -387,7 +387,7 @@ Tabla `activity_log` automática — registra creación/edición/eliminación en
 ## 6. Puntos aún abiertos para decidir contigo
 
 1. **Multi-sucursal** — tabla `sucursales` + `id_sucursal` en `empleados`, si aplica.
-2. **Control de acceso a nivel de datos** — Policies por departamento, si un gerente debe ver solo el suyo.
+2. **Control de acceso a nivel de datos** — Policies por área, si un gerente debe ver solo el suyo.
 3. **Frecuencia y canal de notificaciones** — ¿solo dentro del sistema, o también correo/WhatsApp?
 4. **Fórmula exacta de indemnización y % de horas extra** — dependen de la legislación laboral de tu país; los campos y el catálogo (`valor_referencia` en `tipos`) ya están listos, solo falta la fórmula final.
 
@@ -399,7 +399,7 @@ Tabla `activity_log` automática — registra creación/edición/eliminación en
 2. Tabla `tipos` + seeder inicial
 3. Tablas `gestiones` y `meses` + seeders
 4. Tabla `personas`
-5. Departamentos, Cargos y Empleados
+5. Áreas, Cargos y Empleados
 6. Contratos y Documentos de Empleado
 7. Asistencia + Vacaciones + Horas Extra (ya enlazados a `gestiones`/`meses`)
 8. Conceptos de pago + Planillas

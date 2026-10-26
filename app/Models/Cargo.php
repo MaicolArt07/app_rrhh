@@ -18,7 +18,7 @@ class Cargo extends Model
     protected $table = 'cargos';
 
     protected $fillable = [
-        'id_departamento',
+        'id_area',
         'nombre',
         'sueldo_base',
         'descripcion_funciones',
@@ -30,9 +30,9 @@ class Cargo extends Model
         'estado' => 'boolean',
     ];
 
-    public function departamento()
+    public function area()
     {
-        return $this->belongsTo(Departamento::class, 'id_departamento');
+        return $this->belongsTo(Area::class, 'id_area');
     }
 
     public function empleados()

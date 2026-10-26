@@ -15,6 +15,8 @@ class LivewireTurnos extends Component
 
     public string $search = '';
     public $modalVisible = false;
+    public bool $buscado = false;
+    public ?int $viewingId = null;
 
     protected $paginationTheme = 'tailwind';
 
@@ -28,16 +30,51 @@ class LivewireTurnos extends Component
         $this->resetPage();
     }
 
+    public function buscar()
+    {
+        $this->resetPage();
+        $this->buscado = true;
+    }
+
+    public function limpiarFiltros()
+    {
+        $this->reset('search');
+        $this->buscado = false;
+    }
+
+    public function verDetalle($id)
+    {
+        $this->viewingId = $id;
+    }
+
+    public function cerrarDetalle()
+    {
+        $this->viewingId = null;
+    }
+
+    public function editarDesdeDetalle($id)
+    {
+        $this->viewingId = null;
+        $this->openModal($id);
+    }
+
     public function render()
     {
-        $query = Turno::query();
+        $turnos = null;
 
-        if (!empty($this->search)) {
-            $query->where('nombre', 'like', "%{$this->search}%");
+        if ($this->buscado) {
+            $query = Turno::query();
+
+            if (!empty($this->search)) {
+                $query->where('nombre', 'like', "%{$this->search}%");
+            }
+
+            $turnos = $query->orderBy('nombre')->paginate(10);
         }
 
         return view('livewire.turnos.index', [
-            'turnos' => $query->orderBy('nombre')->paginate(10),
+            'turnos' => $turnos,
+            'turnoDetalle' => $this->viewingId ? Turno::find($this->viewingId) : null,
         ]);
     }
 

@@ -21,6 +21,8 @@ class LivewireReglamentos extends Component
     public $reglamentoLecturasId = null;
     public $documento;
     public string $search = '';
+    public bool $buscado = false;
+    public ?int $viewingId = null;
 
     protected $paginationTheme = 'tailwind';
 
@@ -34,16 +36,53 @@ class LivewireReglamentos extends Component
         $this->resetPage();
     }
 
+    public function buscar()
+    {
+        $this->resetPage();
+        $this->buscado = true;
+    }
+
+    public function limpiarFiltros()
+    {
+        $this->reset('search');
+        $this->buscado = false;
+    }
+
+    public function verDetalle($id)
+    {
+        $this->viewingId = $id;
+    }
+
+    public function cerrarDetalle()
+    {
+        $this->viewingId = null;
+    }
+
+    public function editarDesdeDetalle($id)
+    {
+        $this->viewingId = null;
+        $this->openModal($id);
+    }
+
     public function render()
     {
-        $query = Reglamento::withCount('lecturas');
+        $reglamentos = null;
 
-        if (!empty($this->search)) {
-            $query->where('titulo', 'like', "%{$this->search}%");
+        if ($this->buscado) {
+            $query = Reglamento::withCount('lecturas');
+
+            if (!empty($this->search)) {
+                $query->where('titulo', 'like', "%{$this->search}%");
+            }
+
+            $reglamentos = $query->orderByDesc('vigente_desde')->paginate(10);
         }
 
         return view('livewire.reglamentos.index', [
-            'reglamentos' => $query->orderByDesc('vigente_desde')->paginate(10),
+            'reglamentos' => $reglamentos,
+            'reglamentoDetalle' => $this->viewingId
+                ? Reglamento::withCount('lecturas')->find($this->viewingId)
+                : null,
             'reglamentoLecturas' => $this->reglamentoLecturasId
                 ? Reglamento::with('lecturas.empleado.persona')->find($this->reglamentoLecturasId)
                 : null,

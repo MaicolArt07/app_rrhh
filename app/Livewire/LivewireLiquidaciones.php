@@ -19,6 +19,8 @@ class LivewireLiquidaciones extends Component
 
     public string $search = '';
     public $modalVisible = false;
+    public bool $buscado = false;
+    public ?int $viewingId = null;
 
     protected $paginationTheme = 'tailwind';
 
@@ -32,22 +34,53 @@ class LivewireLiquidaciones extends Component
         $this->resetPage();
     }
 
+    public function buscar()
+    {
+        $this->resetPage();
+        $this->buscado = true;
+    }
+
+    public function limpiarFiltros()
+    {
+        $this->reset('search');
+        $this->buscado = false;
+    }
+
+    public function verDetalle($id)
+    {
+        $this->viewingId = $id;
+    }
+
+    public function cerrarDetalle()
+    {
+        $this->viewingId = null;
+    }
+
     public function render()
     {
-        $query = Liquidacion::with(['empleado.persona', 'tipoLiquidacion']);
+        $liquidaciones = null;
 
-        if (!empty($this->search)) {
-            $query->whereHas('empleado', function ($q) {
-                $q->where('codigo_empleado', 'like', "%{$this->search}%")
-                    ->orWhereHas('persona', function ($p) {
-                        $p->where('nombres', 'like', "%{$this->search}%")
-                            ->orWhere('apellidos', 'like', "%{$this->search}%");
-                    });
-            });
+        if ($this->buscado) {
+            $query = Liquidacion::with(['empleado.persona', 'tipoLiquidacion']);
+
+            if (!empty($this->search)) {
+                $query->whereHas('empleado', function ($q) {
+                    $q->where('codigo_empleado', 'like', "%{$this->search}%")
+                        ->orWhereHas('persona', function ($p) {
+                            $p->where('primer_nombre', 'like', "%{$this->search}%")
+                                ->orWhere('primer_apellido', 'like', "%{$this->search}%");
+                        });
+                });
+            }
+
+            $liquidaciones = $query->orderByDesc('id')->paginate(10);
         }
 
         return view('livewire.liquidaciones.index', [
-            'liquidaciones' => $query->orderByDesc('id')->paginate(10),
+            'liquidaciones' => $liquidaciones,
+            'liquidacionDetalle' => $this->viewingId
+                ? Liquidacion::with(['empleado.persona', 'tipoLiquidacion'])->find($this->viewingId)
+                : null,
             'empleados' => Empleado::with('persona')->where('estado', true)->get(),
             'tiposLiquidacion' => Tipo::categoria('tipo_liquidacion')->activos()->orderBy('orden')->get(),
         ]);

@@ -16,7 +16,8 @@ class RolesAndPermissionsSeeder extends Seeder
             'Ver Personas',
             'Ver Empleados',
             'Ver Cargos',
-            'Ver Departamentos',
+            'Ver Áreas',
+            'Ver Empresas',
             'Ver Contratos',
             'Ver Documentos',
             'Ver Asistencia',
@@ -40,6 +41,9 @@ class RolesAndPermissionsSeeder extends Seeder
         // Permisos de acciones específicas dentro de un módulo.
         $acciones = [
             'Marcar Asistencia',
+            'Importar Asistencia',
+            'Editar Matriz Asistencia',
+            'Asignar Dias Remotos',
             'Aprobar Permisos Laborales',
             'Aprobar Vacaciones',
             'Generar Planillas',
@@ -64,11 +68,12 @@ class RolesAndPermissionsSeeder extends Seeder
 
         $rrhh = Role::firstOrCreate(['name' => 'RRHH']);
         $rrhh->syncPermissions([
-            'Ver Inicio', 'Ver Personas', 'Ver Empleados', 'Ver Cargos', 'Ver Departamentos',
+            'Ver Inicio', 'Ver Personas', 'Ver Empleados', 'Ver Cargos', 'Ver Áreas', 'Ver Empresas',
             'Ver Contratos', 'Ver Documentos', 'Ver Asistencia', 'Ver Vacaciones', 'Ver Horas Extra',
             'Ver Planillas', 'Ver Liquidaciones', 'Ver Evaluaciones', 'Ver Reglamentos',
             'Ver Notificaciones', 'Ver Anticipos', 'Ver Reportes', 'Ver Tipos', 'Ver Gestiones',
-            'Marcar Asistencia', 'Aprobar Permisos Laborales', 'Aprobar Vacaciones',
+            'Marcar Asistencia', 'Importar Asistencia', 'Editar Matriz Asistencia', 'Asignar Dias Remotos',
+            'Aprobar Permisos Laborales', 'Aprobar Vacaciones',
             'Generar Planillas', 'Generar Liquidaciones', 'Gestionar Evaluaciones',
             'Gestionar Anticipos', 'Gestionar Reglamentos', 'Gestionar Tipos', 'Gestionar Gestiones',
         ]);

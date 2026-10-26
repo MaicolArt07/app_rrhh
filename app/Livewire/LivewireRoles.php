@@ -15,6 +15,8 @@ class LivewireRoles extends Component
     public $modalVisible = false;
     public $permissions = [];
     public $search = '';
+    public bool $buscado = false;
+    public ?int $viewingId = null;
 
     protected $paginationTheme = 'tailwind';
 
@@ -24,17 +26,52 @@ class LivewireRoles extends Component
         $this->permissions = Permission::all(); // Carga todos los permisos
     }
 
+    public function buscar()
+    {
+        $this->resetPage();
+        $this->buscado = true;
+    }
+
+    public function limpiarFiltros()
+    {
+        $this->reset('search');
+        $this->buscado = false;
+    }
+
     public function render()
     {
-        $query = Role::with('permissions');
+        $roles = null;
 
-        if (!empty($this->search)) {
-            $query->where('name', 'like', '%' . $this->search . '%');
+        if ($this->buscado) {
+            $query = Role::with('permissions');
+
+            if (!empty($this->search)) {
+                $query->where('name', 'like', '%' . $this->search . '%');
+            }
+
+            $roles = $query->orderBy('name')->paginate(5);
         }
 
         return view('livewire.roles.index', [
-            'roles' => $query->orderBy('name')->paginate(5),
+            'roles' => $roles,
+            'roleDetalle' => $this->viewingId ? Role::with('permissions')->find($this->viewingId) : null,
         ]);
+    }
+
+    public function verDetalle($id)
+    {
+        $this->viewingId = $id;
+    }
+
+    public function cerrarDetalle()
+    {
+        $this->viewingId = null;
+    }
+
+    public function editarDesdeDetalle($id)
+    {
+        $this->viewingId = null;
+        $this->openModal($id);
     }
 
     public function openModal($id = null)

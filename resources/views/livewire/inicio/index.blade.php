@@ -99,8 +99,8 @@
             wire:ignore
             x-data="{
                 init() {
-                    const data = @js($empleadosPorDepartamento);
-                    new Chart(this.$refs.departamentoChart, {
+                    const data = @js($empleadosPorArea);
+                    new Chart(this.$refs.areaChart, {
                         type: 'doughnut',
                         data: {
                             labels: data.map((d) => d.label),
@@ -120,10 +120,10 @@
             }"
         >
             <h3 class="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-zinc-200">
-                <i class="bi bi-diagram-3-fill text-primary"></i> Empleados por Departamento
+                <i class="bi bi-diagram-3-fill text-primary"></i> Empleados por Área
             </h3>
             <div class="h-64">
-                <canvas x-ref="departamentoChart"></canvas>
+                <canvas x-ref="areaChart"></canvas>
             </div>
         </div>
 
@@ -179,13 +179,24 @@
 
         <div class="rounded-xl border border-zinc-200 bg-white p-5 shadow-lg dark:border-zinc-700 dark:bg-zinc-900">
             <h3 class="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-zinc-200">
-                <i class="bi bi-file-earmark-text-fill text-yellow-500"></i> Contratos por vencer (30 días)
+                <i class="bi bi-file-earmark-text-fill text-yellow-500"></i> Alertas de contratos
             </h3>
             <ul class="divide-y divide-gray-200 dark:divide-zinc-700">
                 @forelse ($contratosPorVencer as $contrato)
-                    <li class="flex items-center justify-between py-2 text-sm">
-                        <span class="text-zinc-800 dark:text-zinc-100">{{ $contrato->empleado->persona?->nombreCompleto() }}</span>
-                        <span class="text-xs text-red-600 dark:text-red-400">{{ $contrato->fecha_fin->format('d/m/Y') }}</span>
+                    <li class="flex items-center justify-between gap-2 py-2 text-sm">
+                        <span class="text-zinc-800 dark:text-zinc-100">
+                            {{ $contrato->empleado->persona?->nombreCompleto() }}
+                            @if ($contrato->esUltimaPrestacion())
+                                <span class="block text-xs font-semibold text-orange-600 dark:text-orange-400">2.º contrato por prestación</span>
+                            @endif
+                        </span>
+                        <span class="whitespace-nowrap text-xs {{ $contrato->vencido() ? 'font-semibold text-red-600 dark:text-red-400' : 'text-yellow-700 dark:text-yellow-400' }}">
+                            @if ($contrato->fecha_fin)
+                                {{ $contrato->vencido() ? 'Venció' : 'Vence' }} {{ $contrato->fecha_fin->format('d/m/Y') }}
+                            @else
+                                Sin fecha fin
+                            @endif
+                        </span>
                     </li>
                 @empty
                     <li class="py-2 text-sm text-zinc-500 dark:text-zinc-400">No hay contratos por vencer.</li>

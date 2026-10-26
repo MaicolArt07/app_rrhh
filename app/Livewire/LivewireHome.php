@@ -3,12 +3,14 @@
 namespace App\Livewire;
 
 use App\Models\AnticipoPrestamo;
+use App\Models\Area;
 use App\Models\Asistencia;
 use App\Models\Contrato;
-use App\Models\Departamento;
 use App\Models\DocumentoEmpleado;
 use App\Models\Empleado;
 use App\Models\Planilla;
+use App\Models\TipoAsistencia;
+use App\Services\ContratoService;
 use Illuminate\Support\Carbon;
 use Livewire\Component;
 
@@ -25,17 +27,11 @@ class LivewireHome extends Component
 
         $nominaDelMes = Planilla::whereBetween('fecha_inicio', [$inicioMes, $finMes])->sum('total_planilla');
 
-        $asistenciasMes = Asistencia::whereBetween('fecha', [$inicioMes, $hoy])->get();
-        $ausentes = $asistenciasMes->filter(fn ($a) => $a->estadoAsistencia?->codigo === 'ausente')->count();
+        $asistenciasMes = Asistencia::with('tipoAsistencia')->whereBetween('fecha', [$inicioMes, $hoy])->get();
+        $ausentes = $asistenciasMes->filter(fn ($a) => $a->tipoAsistencia?->codigo === TipoAsistencia::SIN_MARCAR)->count();
         $ausentismo = $asistenciasMes->count() > 0 ? round(($ausentes / $asistenciasMes->count()) * 100, 1) : 0;
 
-        $contratosPorVencer = Contrato::with('empleado.persona')
-            ->where('estado', true)
-            ->whereNotNull('fecha_fin')
-            ->whereBetween('fecha_fin', [$hoy, $limiteVencimiento])
-            ->orderBy('fecha_fin')
-            ->limit(5)
-            ->get();
+        $contratosPorVencer = app(ContratoService::class)->alertas()->take(8);
 
         $documentosPorVencer = DocumentoEmpleado::with('empleado.persona')
             ->where('estado', true)
@@ -58,8 +54,8 @@ class LivewireHome extends Component
                 ->sum('total_planilla');
         }
 
-        // Empleados activos por departamento
-        $empleadosPorDepartamento = Departamento::withCount(['empleados' => function ($q) {
+        // Empleados activos por área
+        $empleadosPorArea = Area::withCount(['empleados' => function ($q) {
                 $q->where('estado', true);
             }])
             ->having('empleados_count', '>', 0)
@@ -73,10 +69,10 @@ class LivewireHome extends Component
         $asistenciaAusentes = [];
         for ($i = 6; $i >= 0; $i--) {
             $dia = $hoy->copy()->subDays($i);
-            $registros = Asistencia::whereDate('fecha', $dia)->get();
+            $registros = Asistencia::with('tipoAsistencia')->whereDate('fecha', $dia)->get();
             $asistenciaLabels[] = ucfirst($dia->translatedFormat('D d/m'));
-            $asistenciaPresentes[] = $registros->filter(fn ($a) => $a->estadoAsistencia?->codigo !== 'ausente')->count();
-            $asistenciaAusentes[] = $registros->filter(fn ($a) => $a->estadoAsistencia?->codigo === 'ausente')->count();
+            $asistenciaPresentes[] = $registros->filter(fn ($a) => $a->tipoAsistencia?->codigo !== TipoAsistencia::SIN_MARCAR)->count();
+            $asistenciaAusentes[] = $registros->filter(fn ($a) => $a->tipoAsistencia?->codigo === TipoAsistencia::SIN_MARCAR)->count();
         }
 
         return view('livewire.inicio.index', [
@@ -89,7 +85,7 @@ class LivewireHome extends Component
             'anticiposMontoPendiente' => $anticiposMontoPendiente,
             'nominaLabels' => $nominaLabels,
             'nominaData' => $nominaData,
-            'empleadosPorDepartamento' => $empleadosPorDepartamento,
+            'empleadosPorArea' => $empleadosPorArea,
             'asistenciaLabels' => $asistenciaLabels,
             'asistenciaPresentes' => $asistenciaPresentes,
             'asistenciaAusentes' => $asistenciaAusentes,

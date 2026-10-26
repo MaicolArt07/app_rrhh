@@ -3,8 +3,8 @@
 namespace App\Livewire;
 
 use App\Livewire\Form\CargoForm;
+use App\Models\Area;
 use App\Models\Cargo;
-use App\Models\Departamento;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -15,8 +15,10 @@ class LivewireCargos extends Component
     public CargoForm $form;
 
     public $search = '';
-    public $departamentoFiltro = '';
+    public $areaFiltro = '';
     public $modalVisible = false;
+    public bool $buscado = false;
+    public ?int $viewingId = null;
 
     protected $paginationTheme = 'tailwind';
 
@@ -30,26 +32,63 @@ class LivewireCargos extends Component
         $this->resetPage();
     }
 
-    public function updatingDepartamentoFiltro()
+    public function updatingAreaFiltro()
     {
         $this->resetPage();
     }
 
+    public function buscar()
+    {
+        $this->resetPage();
+        $this->buscado = true;
+    }
+
+    public function limpiarFiltros()
+    {
+        $this->reset('search', 'areaFiltro');
+        $this->buscado = false;
+    }
+
+    public function verDetalle($id)
+    {
+        $this->viewingId = $id;
+    }
+
+    public function cerrarDetalle()
+    {
+        $this->viewingId = null;
+    }
+
+    public function editarDesdeDetalle($id)
+    {
+        $this->viewingId = null;
+        $this->openModal($id);
+    }
+
     public function render()
     {
-        $query = Cargo::query()->with('departamento');
+        $cargos = null;
 
-        if (!empty($this->departamentoFiltro)) {
-            $query->where('id_departamento', $this->departamentoFiltro);
-        }
+        if ($this->buscado) {
+            $query = Cargo::query()->with('area');
 
-        if (!empty($this->search)) {
-            $query->where('nombre', 'like', "%{$this->search}%");
+            if (!empty($this->areaFiltro)) {
+                $query->where('id_area', $this->areaFiltro);
+            }
+
+            if (!empty($this->search)) {
+                $query->where('nombre', 'like', "%{$this->search}%");
+            }
+
+            $cargos = $query->withCount('empleados')->orderBy('nombre')->paginate(10);
         }
 
         return view('livewire.cargos.index', [
-            'cargos' => $query->withCount('empleados')->orderBy('nombre')->paginate(10),
-            'departamentos' => Departamento::where('estado', true)->orderBy('nombre')->get(),
+            'cargos' => $cargos,
+            'areas' => Area::where('estado', true)->orderBy('nombre')->get(),
+            'cargoDetalle' => $this->viewingId
+                ? Cargo::with('area')->withCount('empleados')->find($this->viewingId)
+                : null,
         ]);
     }
 

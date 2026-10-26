@@ -21,6 +21,9 @@ class LivewireHorasExtra extends Component
     public $mesFiltro = '';
     public string $search = '';
     public $modalVisible = false;
+    public bool $buscado = false;
+
+    public ?int $viewingId = null;
 
     protected $paginationTheme = 'tailwind';
 
@@ -40,6 +43,19 @@ class LivewireHorasExtra extends Component
         $this->resetPage();
     }
 
+    public function buscar()
+    {
+        $this->resetPage();
+        $this->buscado = true;
+    }
+
+    public function limpiarFiltros()
+    {
+        $this->reset('search', 'mesFiltro');
+        $this->mesFiltro = (int) now()->month;
+        $this->buscado = false;
+    }
+
     public function updatedFormIdEmpleado($value)
     {
         if ($value && !$this->form->valor_hora_base) {
@@ -50,26 +66,51 @@ class LivewireHorasExtra extends Component
         }
     }
 
+    public function verDetalle($id)
+    {
+        $this->viewingId = $id;
+    }
+
+    public function cerrarDetalle()
+    {
+        $this->viewingId = null;
+    }
+
+    public function editarDesdeDetalle($id)
+    {
+        $this->viewingId = null;
+        $this->openModal($id);
+    }
+
     public function render()
     {
-        $query = HoraExtraDetalle::query()->with(['empleado.persona', 'tipoHoraExtra']);
+        $detalles = null;
 
-        if (!empty($this->mesFiltro)) {
-            $query->whereHas('mes', fn ($m) => $m->where('numero', $this->mesFiltro));
-        }
+        if ($this->buscado) {
+            $query = HoraExtraDetalle::query()->with(['empleado.persona', 'tipoHoraExtra']);
 
-        if (!empty($this->search)) {
-            $query->whereHas('empleado', function ($q) {
-                $q->where('codigo_empleado', 'like', "%{$this->search}%")
-                    ->orWhereHas('persona', function ($p) {
-                        $p->where('nombres', 'like', "%{$this->search}%")
-                            ->orWhere('apellidos', 'like', "%{$this->search}%");
-                    });
-            });
+            if (!empty($this->mesFiltro)) {
+                $query->whereHas('mes', fn ($m) => $m->where('numero', $this->mesFiltro));
+            }
+
+            if (!empty($this->search)) {
+                $query->whereHas('empleado', function ($q) {
+                    $q->where('codigo_empleado', 'like', "%{$this->search}%")
+                        ->orWhereHas('persona', function ($p) {
+                            $p->where('primer_nombre', 'like', "%{$this->search}%")
+                                ->orWhere('primer_apellido', 'like', "%{$this->search}%");
+                        });
+                });
+            }
+
+            $detalles = $query->orderByDesc('fecha')->paginate(15);
         }
 
         return view('livewire.horas-extra.index', [
-            'detalles' => $query->orderByDesc('fecha')->paginate(15),
+            'detalles' => $detalles,
+            'horaExtraDetalle' => $this->viewingId
+                ? HoraExtraDetalle::with(['empleado.persona', 'tipoHoraExtra', 'mes', 'gestion', 'planillaDetalle'])->find($this->viewingId)
+                : null,
             'empleados' => Empleado::with('persona')->where('estado', true)->get(),
             'meses' => Mes::orderBy('numero')->get(),
             'tiposHoraExtra' => Tipo::categoria('tipo_hora_extra')->activos()->orderBy('orden')->get(),

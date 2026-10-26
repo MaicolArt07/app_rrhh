@@ -1,11 +1,16 @@
 <?php
 
+use App\Livewire\LivewireAreas;
 use App\Livewire\LivewireAsistencia;
 use App\Livewire\LivewireCargos;
 use App\Livewire\LivewireContratos;
-use App\Livewire\LivewireDepartamentos;
+use App\Livewire\LivewireDiasRemotos;
 use App\Livewire\LivewireDocumentos;
+use App\Livewire\LivewireImportarBiometrico;
+use App\Livewire\LivewireMatrizAsistencia;
+use App\Livewire\LivewireTiposAsistencia;
 use App\Livewire\LivewireEmpleados;
+use App\Livewire\LivewireEmpresas;
 use App\Livewire\LivewireEvaluaciones;
 use App\Livewire\LivewireFeriados;
 use App\Livewire\LivewireAnticipos;
@@ -28,6 +33,7 @@ use App\Livewire\LivewireTipos;
 use App\Livewire\LivewireTurnos;
 use App\Livewire\LivewireUsers;
 use App\Http\Controllers\BoletaController;
+use App\Http\Controllers\ContratoDocumentoController;
 use App\Livewire\Settings\Appearance;
 use App\Livewire\Settings\Password;
 use App\Livewire\Settings\Profile;
@@ -51,14 +57,21 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/tipos', LivewireTipos::class)->middleware('can:Ver Tipos')->name('tipos');
     Route::get('/gestiones', LivewireGestiones::class)->middleware('can:Ver Gestiones')->name('gestiones');
     Route::get('/personas', LivewirePersonas::class)->middleware('can:Ver Personas')->name('personas');
-    Route::get('/departamentos', LivewireDepartamentos::class)->middleware('can:Ver Departamentos')->name('departamentos');
+    Route::get('/areas', LivewireAreas::class)->middleware('can:Ver Áreas')->name('areas');
     Route::get('/cargos', LivewireCargos::class)->middleware('can:Ver Cargos')->name('cargos');
     Route::get('/empleados', LivewireEmpleados::class)->middleware('can:Ver Empleados')->name('empleados');
+    Route::get('/personal/{empresa}', LivewireEmpleados::class)->middleware('can:Ver Empleados')->name('personal.empresa');
+    Route::get('/empresas', LivewireEmpresas::class)->middleware('can:Ver Empresas')->name('empresas');
     Route::get('/contratos', LivewireContratos::class)->middleware('can:Ver Contratos')->name('contratos');
+    Route::get('/contratos/{contrato}/documento', [ContratoDocumentoController::class, 'descargar'])->middleware('can:Ver Contratos')->name('contratos.documento');
     Route::get('/documentos', LivewireDocumentos::class)->middleware('can:Ver Documentos')->name('documentos');
     Route::get('/turnos', LivewireTurnos::class)->middleware('can:Ver Asistencia')->name('turnos');
     Route::get('/feriados', LivewireFeriados::class)->middleware('can:Ver Asistencia')->name('feriados');
     Route::get('/asistencia', LivewireAsistencia::class)->middleware('can:Ver Asistencia')->name('asistencia');
+    Route::get('/asistencia/matriz', LivewireMatrizAsistencia::class)->middleware('can:Ver Asistencia')->name('asistencia.matriz');
+    Route::get('/asistencia/importar', LivewireImportarBiometrico::class)->middleware('can:Importar Asistencia')->name('asistencia.importar');
+    Route::get('/asistencia/dias-remotos', LivewireDiasRemotos::class)->middleware('can:Asignar Dias Remotos')->name('asistencia.dias-remotos');
+    Route::get('/asistencia/tipos', LivewireTiposAsistencia::class)->middleware('can:Editar Matriz Asistencia')->name('asistencia.tipos');
     Route::get('/permisos-laborales', LivewirePermisosLaborales::class)->middleware('can:Ver Asistencia')->name('permisos-laborales');
     Route::get('/vacaciones', LivewireSaldosVacaciones::class)->middleware('can:Ver Vacaciones')->name('vacaciones');
     Route::get('/horas-extra', LivewireHorasExtra::class)->middleware('can:Ver Horas Extra')->name('horas-extra');

@@ -16,6 +16,8 @@ class LivewireTipos extends Component
     public $search = '';
     public $categoriaFiltro = '';
     public $modalVisible = false;
+    public bool $buscado = false;
+    public ?int $viewingId = null;
 
     protected $paginationTheme = 'tailwind';
 
@@ -36,25 +38,60 @@ class LivewireTipos extends Component
         $this->resetPage();
     }
 
+    public function buscar()
+    {
+        $this->resetPage();
+        $this->buscado = true;
+    }
+
+    public function limpiarFiltros()
+    {
+        $this->reset('search', 'categoriaFiltro');
+        $this->buscado = false;
+    }
+
     public function render()
     {
-        $query = Tipo::query();
+        $tipos = null;
 
-        if (!empty($this->categoriaFiltro)) {
-            $query->where('categoria', $this->categoriaFiltro);
-        }
+        if ($this->buscado) {
+            $query = Tipo::query();
 
-        if (!empty($this->search)) {
-            $query->where(function ($q) {
-                $q->where('nombre', 'like', "%{$this->search}%")
-                  ->orWhere('codigo', 'like', "%{$this->search}%");
-            });
+            if (!empty($this->categoriaFiltro)) {
+                $query->where('categoria', $this->categoriaFiltro);
+            }
+
+            if (!empty($this->search)) {
+                $query->where(function ($q) {
+                    $q->where('nombre', 'like', "%{$this->search}%")
+                      ->orWhere('codigo', 'like', "%{$this->search}%");
+                });
+            }
+
+            $tipos = $query->orderBy('categoria')->orderBy('orden')->paginate(15);
         }
 
         return view('livewire.tipos.index', [
-            'tipos' => $query->orderBy('categoria')->orderBy('orden')->paginate(15),
+            'tipos' => $tipos,
             'categorias' => Tipo::query()->select('categoria')->distinct()->orderBy('categoria')->pluck('categoria'),
+            'tipoDetalle' => $this->viewingId ? Tipo::find($this->viewingId) : null,
         ]);
+    }
+
+    public function verDetalle($id)
+    {
+        $this->viewingId = $id;
+    }
+
+    public function cerrarDetalle()
+    {
+        $this->viewingId = null;
+    }
+
+    public function editarDesdeDetalle($id)
+    {
+        $this->viewingId = null;
+        $this->openModal($id);
     }
 
     public function openModal($id = null)

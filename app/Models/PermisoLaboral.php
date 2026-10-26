@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use App\Services\Asistencia\AsistenciaService;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\MediaLibrary\HasMedia;
@@ -19,6 +21,22 @@ class PermisoLaboral extends Model implements HasMedia
     }
 
     protected $table = 'permisos_laborales';
+
+    protected static function booted(): void
+    {
+        // Aprobar, rechazar o cambiar un permiso reclasifica la asistencia de esos días.
+        $recalcular = function (PermisoLaboral $permiso) {
+            $inicio = collect([$permiso->fecha_inicio, $permiso->getOriginal('fecha_inicio')])->filter()->map(fn ($f) => Carbon::parse($f))->min();
+            $fin = collect([$permiso->fecha_fin, $permiso->getOriginal('fecha_fin')])->filter()->map(fn ($f) => Carbon::parse($f))->max();
+
+            if ($inicio && $fin) {
+                app(AsistenciaService::class)->recalcular($inicio, $fin, [$permiso->id_empleado]);
+            }
+        };
+
+        static::saved($recalcular);
+        static::deleted($recalcular);
+    }
 
     protected $fillable = [
         'id_empleado',

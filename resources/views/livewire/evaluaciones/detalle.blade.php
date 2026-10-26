@@ -1,0 +1,130 @@
+<div
+    x-data="{ open: false }"
+    x-init="setTimeout(() => open = true, 10)"
+    class="fixed inset-0 z-50"
+>
+    <div
+        x-show="open"
+        x-transition.opacity
+        class="absolute inset-0 bg-zinc-900/30"
+        wire:click="cerrarDetalle"
+    ></div>
+
+    <div
+        x-show="open"
+        x-transition:enter="transition ease-out duration-200"
+        x-transition:enter-start="translate-x-full"
+        x-transition:enter-end="translate-x-0"
+        x-transition:leave="transition ease-in duration-150"
+        x-transition:leave-start="translate-x-0"
+        x-transition:leave-end="translate-x-full"
+        class="absolute inset-y-0 right-0 flex w-full max-w-lg flex-col border-l border-zinc-300 bg-zinc-50 shadow-xl dark:border-zinc-700 dark:bg-zinc-950"
+    >
+        @php
+            $codigo = $evaluacionDetalle->resultadoEvaluacion->codigo ?? '';
+            $badge = match($codigo) {
+                'excelente' => 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300',
+                'bueno' => 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
+                'regular' => 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
+                default => 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',
+            };
+        @endphp
+
+        <div class="flex items-center gap-3 border-b border-zinc-300 bg-white px-5 py-4 dark:border-zinc-700 dark:bg-zinc-900">
+            <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary/15 text-base font-semibold text-primary">
+                @php
+                    $iniciales = collect([$evaluacionDetalle->empleado?->persona?->primer_nombre, $evaluacionDetalle->empleado?->persona?->primer_apellido])
+                        ->filter()
+                        ->map(fn ($n) => mb_strtoupper(mb_substr($n, 0, 1)))
+                        ->implode('');
+                @endphp
+                @if ($iniciales !== '')
+                    {{ $iniciales }}
+                @else
+                    <i class="bi bi-clipboard-check-fill"></i>
+                @endif
+            </div>
+            <div class="min-w-0 flex-1">
+                <h2 class="truncate text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                    {{ $evaluacionDetalle->empleado?->persona?->nombreCompleto() ?? '—' }}
+                </h2>
+                <p class="text-xs text-zinc-500 dark:text-zinc-400">
+                    {{ $evaluacionDetalle->empleado?->codigo_empleado }}
+                    @if ($evaluacionDetalle->gestion) · Gestión {{ $evaluacionDetalle->gestion->anio }} @endif
+                </p>
+            </div>
+            <span class="rounded px-2 py-0.5 text-xs font-semibold {{ $badge }}">
+                {{ $evaluacionDetalle->resultadoEvaluacion->nombre ?? '—' }}
+            </span>
+            <button wire:click="cerrarDetalle" class="text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-100 cursor-pointer">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+
+        <div class="flex-1 space-y-5 overflow-y-auto px-5 py-5">
+
+            <div>
+                <h3 class="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-primary">
+                    <i class="bi bi-clipboard-check-fill"></i> Datos generales
+                </h3>
+                <div class="grid grid-cols-2 gap-3 rounded border border-zinc-300 bg-white p-3 dark:border-zinc-700 dark:bg-zinc-900">
+                    <div>
+                        <span class="text-xs text-zinc-500 dark:text-zinc-400">Gestión</span>
+                        <p class="text-sm text-zinc-800 dark:text-zinc-100">{{ $evaluacionDetalle->gestion->anio ?? '—' }}</p>
+                    </div>
+                    <div>
+                        <span class="text-xs text-zinc-500 dark:text-zinc-400">Semestre</span>
+                        <p class="text-sm text-zinc-800 dark:text-zinc-100">{{ ucfirst($evaluacionDetalle->semestre ?? '—') }}</p>
+                    </div>
+                    <div>
+                        <span class="text-xs text-zinc-500 dark:text-zinc-400">Fecha de evaluación</span>
+                        <p class="text-sm text-zinc-800 dark:text-zinc-100">{{ $evaluacionDetalle->fecha_evaluacion?->format('d/m/Y') ?? '—' }}</p>
+                    </div>
+                    <div>
+                        <span class="text-xs text-zinc-500 dark:text-zinc-400">Evaluador</span>
+                        <p class="text-sm text-zinc-800 dark:text-zinc-100">{{ $evaluacionDetalle->evaluador->name ?? '—' }}</p>
+                    </div>
+                    <div>
+                        <span class="text-xs text-zinc-500 dark:text-zinc-400">Puntuación total</span>
+                        <p class="text-sm font-semibold text-zinc-800 dark:text-zinc-100">{{ $evaluacionDetalle->puntuacion_total }}</p>
+                    </div>
+                    <div>
+                        <span class="text-xs text-zinc-500 dark:text-zinc-400">Resultado</span>
+                        <p class="text-sm text-zinc-800 dark:text-zinc-100">{{ $evaluacionDetalle->resultadoEvaluacion->nombre ?? '—' }}</p>
+                    </div>
+                    <div class="col-span-2">
+                        <span class="text-xs text-zinc-500 dark:text-zinc-400">Comentarios</span>
+                        <p class="text-sm text-zinc-800 dark:text-zinc-100">{{ $evaluacionDetalle->comentarios ?? '—' }}</p>
+                    </div>
+                    <div class="col-span-2">
+                        <span class="text-xs text-zinc-500 dark:text-zinc-400">Plan de mejora</span>
+                        <p class="text-sm text-zinc-800 dark:text-zinc-100">{{ $evaluacionDetalle->plan_mejora ?? '—' }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <h3 class="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-primary">
+                    <i class="bi bi-list-check"></i> Criterios evaluados
+                </h3>
+                <div class="rounded border border-zinc-300 bg-white p-3 dark:border-zinc-700 dark:bg-zinc-900">
+                    @forelse ($evaluacionDetalle->detalles as $detalle)
+                        <div class="flex items-center justify-between border-b border-zinc-200 py-1.5 last:border-0 dark:border-zinc-800">
+                            <span class="text-sm text-zinc-800 dark:text-zinc-100">{{ $detalle->criterio }}</span>
+                            <span class="text-sm font-semibold text-zinc-800 dark:text-zinc-100">{{ $detalle->puntuacion }}</span>
+                        </div>
+                    @empty
+                        <p class="text-sm text-zinc-400">Sin criterios registrados.</p>
+                    @endforelse
+                </div>
+            </div>
+        </div>
+
+        <div class="flex justify-end gap-3 border-t border-zinc-300 bg-white px-5 py-3 dark:border-zinc-700 dark:bg-zinc-900">
+            <button wire:click="cerrarDetalle"
+                    class="rounded border border-zinc-400 bg-white px-4 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-100 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700 cursor-pointer">
+                Cerrar
+            </button>
+        </div>
+    </div>
+</div>

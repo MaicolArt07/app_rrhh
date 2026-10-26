@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Livewire\Form\PermisoLaboralForm;
 use App\Models\Empleado;
+use App\Models\Feriado;
 use App\Models\PermisoLaboral;
 use App\Models\Tipo;
 use App\Services\NotificacionService;
@@ -23,6 +24,9 @@ class LivewirePermisosLaborales extends Component
     public string $search = '';
     public $modalVisible = false;
     public $documentoSoporte;
+    public bool $buscado = false;
+
+    public ?int $viewingId = null;
 
     protected $paginationTheme = 'tailwind';
 
@@ -41,26 +45,63 @@ class LivewirePermisosLaborales extends Component
         $this->resetPage();
     }
 
+    public function buscar()
+    {
+        $this->resetPage();
+        $this->buscado = true;
+    }
+
+    public function limpiarFiltros()
+    {
+        $this->reset('search', 'estadoFiltro');
+        $this->buscado = false;
+    }
+
+    public function verDetalle($id)
+    {
+        $this->viewingId = $id;
+    }
+
+    public function cerrarDetalle()
+    {
+        $this->viewingId = null;
+    }
+
+    public function editarDesdeDetalle($id)
+    {
+        $this->viewingId = null;
+        $this->openModal($id);
+    }
+
     public function render()
     {
-        $query = PermisoLaboral::query()->with(['empleado.persona', 'tipoPermiso', 'aprobadoPor']);
+        $permisos = null;
 
-        if (!empty($this->estadoFiltro)) {
-            $query->where('estado_solicitud', $this->estadoFiltro);
-        }
+        if ($this->buscado) {
+            $query = PermisoLaboral::query()->with(['empleado.persona', 'tipoPermiso', 'aprobadoPor']);
 
-        if (!empty($this->search)) {
-            $query->whereHas('empleado', function ($q) {
-                $q->where('codigo_empleado', 'like', "%{$this->search}%")
-                    ->orWhereHas('persona', function ($p) {
-                        $p->where('nombres', 'like', "%{$this->search}%")
-                            ->orWhere('apellidos', 'like', "%{$this->search}%");
-                    });
-            });
+            if (!empty($this->estadoFiltro)) {
+                $query->where('estado_solicitud', $this->estadoFiltro);
+            }
+
+            if (!empty($this->search)) {
+                $query->whereHas('empleado', function ($q) {
+                    $q->where('codigo_empleado', 'like', "%{$this->search}%")
+                        ->orWhereHas('persona', function ($p) {
+                            $p->where('primer_nombre', 'like', "%{$this->search}%")
+                                ->orWhere('primer_apellido', 'like', "%{$this->search}%");
+                        });
+                });
+            }
+
+            $permisos = $query->orderByDesc('id')->paginate(10);
         }
 
         return view('livewire.permisos-laborales.index', [
-            'permisos' => $query->orderByDesc('id')->paginate(10),
+            'permisos' => $permisos,
+            'permisoDetalle' => $this->viewingId
+                ? PermisoLaboral::with(['empleado.persona', 'tipoPermiso', 'aprobadoPor'])->find($this->viewingId)
+                : null,
             'empleados' => Empleado::with('persona')->where('estado', true)->get(),
             'tiposPermiso' => Tipo::categoria('tipo_permiso')->activos()->orderBy('orden')->get(),
         ]);
@@ -87,7 +128,16 @@ class LivewirePermisosLaborales extends Component
         try {
             $inicio = Carbon::parse($this->form->fecha_inicio);
             $fin = Carbon::parse($this->form->fecha_fin);
-            $dias = $inicio->diffInDays($fin) + 1;
+            // Días hábiles: sin fines de semana ni feriados.
+            $feriados = Feriado::where('estado', true)->where('aplica_todos', true)
+                ->whereBetween('fecha', [$inicio->toDateString(), $fin->toDateString()])
+                ->pluck('fecha')->map(fn ($f) => Carbon::parse($f)->toDateString())->all();
+            $dias = 0;
+            for ($d = $inicio->copy(); $d->lte($fin); $d->addDay()) {
+                if (! $d->isWeekend() && ! in_array($d->toDateString(), $feriados)) {
+                    $dias++;
+                }
+            }
 
             $data = array_merge($this->form->toArray(), ['dias_solicitados' => $dias]);
 

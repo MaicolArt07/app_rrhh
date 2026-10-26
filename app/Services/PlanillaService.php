@@ -8,6 +8,7 @@ use App\Models\HoraExtraDetalle;
 use App\Models\Planilla;
 use App\Models\PlanillaDetalle;
 use App\Models\Tipo;
+use App\Models\TipoAsistencia;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -52,9 +53,12 @@ class PlanillaService
 
                 $montoHorasExtra = round($horasExtraPendientes->sum('monto_calculado'), 2);
 
+                // Solo cuentan los marcajes manuales: la asistencia del biométrico no
+                // descuenta en la planilla (docs/modulo-asistencia-correcciones.md §4.3).
                 $diasTrabajados = $empleado->asistencias()
+                    ->where('origen', 'manual')
                     ->whereBetween('fecha', [$fechaInicio, $fechaFin])
-                    ->whereHas('estadoAsistencia', fn ($q) => $q->whereIn('codigo', ['puntual', 'tarde']))
+                    ->whereHas('tipoAsistencia', fn ($q) => $q->whereIn('codigo', [TipoAsistencia::PUNTUAL, TipoAsistencia::ATRASO]))
                     ->count();
 
                 if ($diasTrabajados === 0) {

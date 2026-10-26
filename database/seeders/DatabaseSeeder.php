@@ -17,6 +17,8 @@ class DatabaseSeeder extends Seeder
             TipoSeeder::class,
             GestionSeeder::class,
             MesSeeder::class,
+            TipoAsistenciaSeeder::class,
+            FeriadosBolivia2026Seeder::class,
         ]);
 
         $admin = User::firstOrCreate(
